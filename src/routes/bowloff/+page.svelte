@@ -12,7 +12,12 @@
 		<span class="tag">🎳 BOWL-OFF</span>
 		<span class="sub">· {g.cond.length}/{g.cond.volume} oil · Fr {frame}/10</span>
 		<span style="flex:1"></span>
-		<button class="ghost" onclick={() => g.reset()}>↺ New</button>
+		{#if g.screen === 'play'}
+			<button class="ghost" onclick={() => confirm('Discard this game without saving?') && g.reset()}>Discard</button>
+			<button class="ghost" style="border-color:var(--me);color:var(--me)" onclick={() => g.finish()}>Finish</button>
+		{:else}
+			<button class="ghost" onclick={() => g.reset()}>↺ New</button>
+		{/if}
 	</div>
 {/if}
 

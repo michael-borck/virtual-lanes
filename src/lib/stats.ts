@@ -42,7 +42,7 @@ const pct = (n: number, d: number) => (d ? Math.round((n / d) * 100) : 0);
 
 export function computeStats(all: GameRecord[]): Stats {
 	const bg = all
-		.filter((g) => g.mode === 'bowloff' && g.frames && g.frames.length)
+		.filter((g) => g.mode === 'bowloff' && g.frames && g.frames.length && !g.partial)
 		.slice()
 		.sort((a, b) => (a.date < b.date ? -1 : 1));
 	const scores = bg.map((g) => g.score ?? 0);

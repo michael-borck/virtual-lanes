@@ -5,7 +5,10 @@
 
 	let rows = $derived(g.standings());
 	let win = $derived(rows[0]);
+	let meRow = $derived(rows.find((r) => r.me));
 	let solo = $derived(g.opponents.length === 0);
+	let partial = $derived(g.partial);
+	let framesBowled = $derived(g.humanFrames.filter((f) => f.length).length);
 	let lv = $derived(g.leaves);
 	let att = $derived(lv.length);
 	let conv = $derived(lv.filter((x) => x.converted).length);
@@ -14,8 +17,8 @@
 
 <div class="page" style="padding-top:20px">
 	<div style="text-align:center;margin-bottom:14px">
-		<div style="font-size:24px;font-weight:800">{solo ? `Final · ${win.scratch}` : win.me ? 'You win! 🏆' : `${win.name.split(' ')[0]} wins`}</div>
-		<div style="color:var(--dim);font-size:13px">{solo ? 'solo game' : g.useHcp ? 'with handicap' : 'scratch'}</div>
+		<div style="font-size:24px;font-weight:800">{partial ? `Partial · ${meRow?.scratch ?? 0}` : solo ? `Final · ${win.scratch}` : win.me ? 'You win! 🏆' : `${win.name.split(' ')[0]} wins`}</div>
+		<div style="color:var(--dim);font-size:13px">{partial ? `saved after ${framesBowled} frame${framesBowled === 1 ? '' : 's'} (not in stats)` : solo ? 'solo game' : g.useHcp ? 'with handicap' : 'scratch'}</div>
 	</div>
 
 	<Leaderboard />

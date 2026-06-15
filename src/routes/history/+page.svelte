@@ -46,6 +46,7 @@
 				{#if g.mode === 'bowloff'}
 					<div class="mid">
 						<span class="score">{g.score}{g.usedHandicap && g.handicap ? ` (+${g.handicap})` : ''}</span>
+						{#if g.partial}<span class="res" style="color:var(--gold)">PARTIAL</span>{/if}
 						{#if g.result}<span class="res" style="color:{resultColor(g.result)}">{g.result.toUpperCase()}</span>{/if}
 					</div>
 					<div class="meta">

@@ -176,6 +176,15 @@ class BowlOff {
 	reset() {
 		this.screen = 'setup';
 	}
+	/** Finish early: save what's bowled so far (partial if before the 10th) and show the summary. */
+	finish() {
+		if (this.screen !== 'play') return;
+		this.#saveGame();
+		this.screen = 'done';
+	}
+	get partial() {
+		return !this.gameOver;
+	}
 
 	/* ---------- human frame machine ---------- */
 	get curIdx() {
@@ -249,13 +258,9 @@ class BowlOff {
 		const me = rows.find((r) => r.me)!;
 		const oppRows = rows.filter((r) => !r.me);
 		const bestOpp = oppRows.length ? Math.max(...oppRows.map((r) => r.total)) : 0;
-		const result: 'win' | 'loss' | 'tie' | undefined = oppRows.length
-			? me.total > bestOpp
-				? 'win'
-				: me.total < bestOpp
-					? 'loss'
-					: 'tie'
-			: undefined;
+		const partial = !this.gameOver;
+		const result: 'win' | 'loss' | 'tie' | undefined =
+			oppRows.length && !partial ? (me.total > bestOpp ? 'win' : me.total < bestOpp ? 'loss' : 'tie') : undefined;
 		const rec: GameRecord = {
 			id: History.newId(),
 			date: new Date().toISOString(),
@@ -274,6 +279,7 @@ class BowlOff {
 			opponents: this.opponents.length ? this.opponents.map((o) => ({ name: o.bowler.name, score: lastTotal(this.oppFrames(o)) })) : undefined,
 			result,
 			usedHandicap: this.useHcp,
+			partial: partial || undefined,
 			ball: this.ballChanges[0]?.name,
 			ballChanges: this.ballChanges.length > 1 ? this.ballChanges.map((c) => ({ frame: c.frame, name: c.name, cover: c.cover })) : undefined,
 			centre: (() => {

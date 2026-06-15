@@ -136,6 +136,7 @@ export interface GameRecord {
 	opponents?: { name: string; score: number }[];
 	result?: 'win' | 'loss' | 'tie';
 	usedHandicap?: boolean;
+	partial?: boolean; // finished early (fewer than 10 frames) — kept in history, excluded from stats
 	ball?: string; // primary ball used (bowl-off) or free-text (journal)
 	ballChanges?: { frame: number; name: string; cover: string }[]; // bowl-off ball-downs
 	centre?: { name: string; pinsetter: string; approach: string; approachFeel: string; ballReturn: string }; // snapshot for stats/ML
