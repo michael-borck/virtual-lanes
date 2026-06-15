@@ -16,7 +16,9 @@ import {
 import { STYLE_PRESETS, TIERS } from '$lib/engine/personas';
 import { roster as rosterStore } from '$lib/roster.svelte';
 import { history, History } from '$lib/history.svelte';
-import type { Ball, Bowler, Frame, GameRecord, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
+import type { Ball, Bowler, Frame, GameRecord, JournalShot, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
+
+const emptyNote = (): JournalShot => ({ saw: '', reaction: '', result: '', adjustments: [], read: '', emotion: '', note: '' });
 
 export type Screen = 'setup' | 'play' | 'done';
 export type HcpMode = 'scratch' | 'perBowler' | 'percent';
@@ -78,6 +80,11 @@ class BowlOff {
 	revealed = $state(0);
 	deckKnocked = $state<number[]>([]);
 	#pendingLeave: { frame: number; standing: number[] } | null = null;
+
+	// per-frame journal notes (post-it) attached to the live game
+	notes = $state<Record<number, JournalShot>>({});
+	noteFrame = $state<number | null>(null); // frame whose post-it is open
+	noteDraft = $state<JournalShot>(emptyNote());
 
 	/** Selectable rivals = visible built-ins + custom (from the roster store). */
 	get roster() {
@@ -150,6 +157,8 @@ class BowlOff {
 		this.#pendingLeave = null;
 		this.revealed = 0;
 		this.deckKnocked = [];
+		this.notes = {};
+		this.noteFrame = null;
 		this.screen = 'play';
 	}
 	reset() {
@@ -252,7 +261,8 @@ class BowlOff {
 			},
 			opponents: this.opponents.length ? this.opponents.map((o) => ({ name: o.bowler.name, score: lastTotal(this.oppFrames(o)) })) : undefined,
 			result,
-			usedHandicap: this.useHcp
+			usedHandicap: this.useHcp,
+			shots: this.noteCount ? Object.values(this.notes).map((s) => ({ ...s, adjustments: [...s.adjustments] })) : undefined
 		};
 		history.add(rec);
 	}
@@ -260,6 +270,32 @@ class BowlOff {
 		const s = new Set(this.deckKnocked);
 		s.has(p) ? s.delete(p) : s.add(p);
 		this.deckKnocked = [...s];
+	}
+
+	/* ---------- per-frame journal (post-it) ---------- */
+	get noteCount() {
+		return Object.keys(this.notes).length;
+	}
+	openNote(frame: number) {
+		const ex = this.notes[frame];
+		this.noteDraft = ex ? { ...ex, adjustments: [...ex.adjustments] } : emptyNote();
+		this.noteFrame = frame;
+	}
+	closeNote() {
+		this.noteFrame = null;
+	}
+	toggleNoteAdj(tag: string) {
+		const s = new Set(this.noteDraft.adjustments);
+		s.has(tag) ? s.delete(tag) : s.add(tag);
+		this.noteDraft.adjustments = [...s];
+	}
+	saveNote() {
+		if (this.noteFrame === null) return;
+		const d = this.noteDraft;
+		const has = d.saw || d.note || d.adjustments.length || d.read || d.emotion || d.reaction;
+		if (has) this.notes[this.noteFrame] = { ...d, adjustments: [...d.adjustments], frame: this.noteFrame };
+		else delete this.notes[this.noteFrame];
+		this.noteFrame = null;
 	}
 
 	/* ---------- views ---------- */

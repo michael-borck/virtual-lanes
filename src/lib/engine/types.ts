@@ -100,6 +100,7 @@ export interface JournalShot {
 	read: '' | 'match' | 'miss'; // did your read match? (V / X)
 	emotion: '' | 'good' | 'ok' | 'bad';
 	note: string;
+	frame?: number; // which frame this note is attached to (0-based), when journaled during a game
 }
 
 /**

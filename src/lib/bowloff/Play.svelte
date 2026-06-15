@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { g } from './state.svelte';
 	import Leaderboard from './Leaderboard.svelte';
+	import PostIt from './PostIt.svelte';
 	import { glyphs, lastTotal, ALLPINS, PIN_ROWS } from '$lib/engine/bowling';
+
+	let noteTarget = $derived(Math.min(Math.max(g.revealed - 1, 0), 9));
 
 	let meTot = $derived(lastTotal(g.humanFrames));
 	let solo = $derived(g.opponents.length === 0);
@@ -41,6 +44,9 @@
 	{/if}
 
 	<div class="leavestat">{leaveLine}</div>
+	<button class="notebtn" onclick={() => g.openNote(noteTarget)}>
+		{g.notes[noteTarget] ? `📝 Edit frame ${noteTarget + 1} note` : `📝 Note frame ${noteTarget + 1}`}{g.noteCount ? ` · ${g.noteCount} logged` : ''}
+	</button>
 
 	<div class="deck">
 		{#each PIN_ROWS as row, ri (ri)}
@@ -61,6 +67,8 @@
 
 	<div class="lbwrap"><Leaderboard /></div>
 </div>
+
+<PostIt />
 
 <style>
 	.play {
@@ -135,6 +143,17 @@
 		font-size: 12px;
 		color: var(--dim);
 		margin-bottom: 4px;
+	}
+	.notebtn {
+		width: 100%;
+		border: 1px dashed var(--line);
+		border-radius: 12px;
+		padding: 10px;
+		color: var(--gold);
+		background: transparent;
+		font-weight: 600;
+		font-size: 13px;
+		margin-bottom: 8px;
 	}
 	.deck {
 		display: flex;

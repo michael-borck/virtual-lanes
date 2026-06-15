@@ -51,6 +51,7 @@
 					<div class="meta">
 						{g.alley}{g.condition ? ` · ${g.condition.length}/${g.condition.volume}${g.condition.patternType === 'sport' ? ' · sport' : ''}` : ''}
 						{#if g.spares?.attempts}· spares {g.spares.converted}/{g.spares.attempts}{g.spares.splits ? ` · ${g.spares.splits} split${g.spares.splits > 1 ? 's' : ''}` : ''}{/if}
+						{#if g.shots?.length}· 📝 {g.shots.length}{/if}
 					</div>
 					{#if g.opponents?.length}
 						<div class="vs">vs {g.opponents.map((o) => `${o.name.split(' ')[0]} ${o.score}`).join(' · ')}</div>
