@@ -4,6 +4,16 @@
 > Python simulation library into a phone-first bowling companion app. Capture-as-we-go so we
 > don't lose the thread between sessions. (Not auto-generated; edit freely.)
 
+## Build status (2026-06)
+
+The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtual-lanes.pages.dev`,
+auto-deploys on push to `main`). Done: **Bowl-off** (layout B, positional pin deck, leave/spare/
+split stats), **History** (shared `GameRecord`, localStorage), **Journal v1** (log shots:
+saw→decided→happened, adjustments, read V/X, emotion; saves to history), **PWA** (manifest, icons,
+offline service worker). Placeholders: **Trace** (camera — coming soon) and **Settings**.
+Backlog: create-your-own bowler/ball (exists in `prototype/`, not yet in the real Bowl-off),
+custom domain (`virtuallanes.app` purchased, not yet attached).
+
 ## Vision
 
 A **phone-first bowling companion** for real bowlers, with three modes:
