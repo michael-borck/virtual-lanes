@@ -1,16 +1,34 @@
 <script lang="ts">
 	import { j, ADJUSTMENTS, EMOJI } from '$lib/journal/state.svelte';
+	import { g } from '$lib/bowloff/state.svelte';
+	import PostIt from '$lib/bowloff/PostIt.svelte';
+	import { glyphs } from '$lib/engine/bowling';
 
 	const REACTIONS: [string, string][] = [['early', 'Early'], ['mid', 'Mid'], ['late', 'Late']];
 	const READS: [string, string][] = [['match', '✓ Matched'], ['miss', '✗ Misread']];
 	const EMOTIONS: [string, string][] = [['good', '😊'], ['ok', '😐'], ['bad', '😤']];
 	let mr = $derived(j.matchRate);
+	let gameActive = $derived(g.screen === 'play' || g.screen === 'done');
+	let frameIdx = $derived(Array.from({ length: Math.min(g.curIdx, 9) + 1 }, (_, i) => i));
 </script>
 
-{#if !j.active}
+{#if gameActive}
 	<div class="page">
 		<h1>📖 Journal</h1>
-		<p class="lede">Log your shots — what you saw, what you adjusted, what happened — and find your misread patterns.</p>
+		<p class="lede">Notes attach to your active game — tap a frame to add a post-it. Most frames stay blank.</p>
+		{#each frameIdx as i (i)}
+			<button class="jframe" onclick={() => g.openNote(i)}>
+				<div class="jf-h"><span class="fn">Frame {i + 1}</span><span class="g">{glyphs(g.humanFrames[i], i === 9).join(' ') || '—'}</span>{#if g.notes[i]}<span class="dot">📝</span>{/if}</div>
+				{#if g.notes[i]}<div class="jf-note">{g.notes[i].saw || g.notes[i].note || g.notes[i].adjustments.join(', ') || 'note'}</div>{/if}
+			</button>
+		{/each}
+		<p class="hint">These save with your game. Switch to Bowl-off to keep bowling.</p>
+	</div>
+	<PostIt />
+{:else if !j.active}
+	<div class="page">
+		<h1>📖 Journal</h1>
+		<p class="lede">No active game — journal standalone, or start a Bowl-off to journal frame-by-frame.</p>
 		<div class="field"><label for="al">Alley</label><input id="al" bind:value={j.alley} /></div>
 		<div class="row2">
 			<div class="field"><label for="pat">Pattern</label><input id="pat" bind:value={j.pattern} placeholder="e.g. House, 41ft sport" /></div>
@@ -215,5 +233,41 @@
 	}
 	.frow .cta {
 		flex: 1;
+	}
+	.jframe {
+		display: block;
+		width: 100%;
+		text-align: left;
+		background: var(--panel);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		padding: 10px 12px;
+		margin-bottom: 8px;
+	}
+	.jf-h {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 13px;
+	}
+	.jf-h .fn {
+		font-weight: 700;
+	}
+	.jf-h .g {
+		flex: 1;
+		color: var(--dim);
+		letter-spacing: 2px;
+	}
+	.jf-note {
+		font-size: 12px;
+		color: var(--dim);
+		font-style: italic;
+		margin-top: 4px;
+	}
+	.hint {
+		font-size: 12px;
+		color: var(--dim);
+		text-align: center;
+		margin-top: 10px;
 	}
 </style>
