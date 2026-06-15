@@ -1,0 +1,433 @@
+<!doctype html>
+<!--
+  THROWAWAY PROTOTYPE — VirtualLanes "bowl-off".
+  Model: rev rate + ball speed are the CAUSAL levers (style = a preset that fills them in);
+  tier scales level. No gender mechanic: division (Open/PBA/PWBA) is a cosmetic label; handicap is a plain number.
+  Create your own bowlers (incl. mimic a champion by stats) and balls. No real names/brands shipped.
+  3 layouts via ?variant=A|B|C or the bottom bar. Run: python3 -m http.server 8000 -d prototype
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0b1020" />
+<title>VirtualLanes — Bowl-Off (prototype)</title>
+<style>
+  :root{--bg:#0b1020;--panel:#151b30;--panel2:#1d2640;--line:#2b3556;--ink:#eef1fb;--dim:#9aa6cc;--me:#46d39a;--opp:#ff7a59;--accent:#6c8cff;--gold:#ffce4d;}
+  *{box-sizing:border-box}html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif;-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom);overscroll-behavior:none}
+  .app{max-width:540px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+  button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+  .topbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+  .topbar .tag{font-weight:700;letter-spacing:.5px}.topbar .sub{color:var(--dim);font-size:12px}.topbar .spacer{flex:1}
+  .ghost{border:1px solid var(--line);border-radius:10px;padding:7px 12px;color:var(--dim);font-size:13px}.ghost:active{background:var(--panel)}
+  .setup{padding:18px 16px 96px;display:flex;flex-direction:column;gap:16px}
+  h1{font-size:23px;margin:4px 0 0}p.lede{color:var(--dim);margin:0}
+  .field label{display:block;font-size:13px;color:var(--dim);margin:0 0 6px}
+  .field input,.field select{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:12px 13px;font:inherit}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;flex-wrap:wrap}
+  .seg button{flex:1;border-radius:9px;padding:9px 4px;font-size:13px;color:var(--dim);white-space:nowrap}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:700}
+  h3.sec{margin:8px 0 -4px;font-size:14px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;display:flex;justify-content:space-between;align-items:center}
+  h3.sec .add{font-size:12px;color:var(--accent);text-transform:none;letter-spacing:0}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+  details>summary{cursor:pointer;padding:13px 0;font-weight:600;color:var(--dim);list-style:none}
+  details>summary::-webkit-details-marker{display:none}details>summary::before{content:"⚙ "}
+  details[open]>summary{border-bottom:1px solid var(--line)}details .body{padding:12px 0;display:flex;flex-direction:column;gap:14px}
+  .ball{background:var(--panel2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:13px}.ball b{color:var(--gold)}
+  .note{font-size:11px;color:var(--dim);line-height:1.4;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .roster{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px;position:relative;text-align:left}
+  .pcard.sel{border-color:var(--opp);box-shadow:0 0 0 2px rgba(255,122,89,.25) inset}
+  .pcard.new{display:flex;align-items:center;justify-content:center;border-style:dashed;color:var(--accent);font-weight:700;min-height:118px}
+  .pcard .nm{font-weight:700;font-size:14px}.pcard .st{font-size:11px;color:var(--dim);margin:1px 0 2px}
+  .pcard .specs{font-size:10px;color:var(--gold);margin-bottom:6px}
+  .pcard .bars{display:flex;flex-direction:column;gap:3px;font-size:10px;color:var(--dim)}
+  .pcard .bar{display:flex;align-items:center;gap:5px}.pcard .bar .track{flex:1;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}.pcard .bar .fill{height:100%;background:var(--accent)}
+  .pcard .scout{font-size:11px;color:var(--dim);margin-top:7px;font-style:italic;line-height:1.3}
+  .pcard .pick{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px}
+  .pcard.sel .pick{background:var(--opp);border-color:var(--opp);color:#fff}
+  .pcard .badge{position:absolute;top:8px;left:8px;font-size:9px;color:var(--accent)}
+  .gtag{font-size:10px;color:var(--dim)}
+  .slider label{display:flex;justify-content:space-between;font-size:13px;color:var(--dim);margin-bottom:6px}
+  .slider label b{color:var(--gold)}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .cta{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));width:min(508px,calc(100% - 28px));background:var(--accent);color:#fff;border-radius:14px;padding:16px;font-weight:700;font-size:16px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:8}
+  .cta:disabled{opacity:.4}.cta.sub{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .lb{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .lbrow{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+  .lbrow.me{border-color:rgba(70,211,154,.5)}.lbrow .rank{width:18px;color:var(--dim);font-size:12px;text-align:center}
+  .lbrow .who{flex:1;min-width:0}.lbrow .who .n{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lbrow .who .n.me{color:var(--me)}
+  .lbrow .who .meta{font-size:10px;color:var(--dim)}.lbrow .tot{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}.lbrow .hcp{font-size:10px;color:var(--gold)}
+  .lanestate{font-size:11px;color:var(--dim);padding:2px 2px 0;display:flex;align-items:center;gap:6px}
+  .lanestate .meter{flex:1;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}.lanestate .meter .f{height:100%;background:linear-gradient(90deg,#46d39a,#ffce4d,#ff7a59)}
+  .sheet{display:grid;grid-template-columns:repeat(9,1fr) 1.5fr;gap:3px}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}.cell.cur{outline:2px solid var(--accent)}
+  .cell .rolls{display:flex;height:18px}.cell .rolls span{flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;border-left:1px solid var(--line)}.cell .rolls span:first-child{border-left:none}
+  .cell .tot{height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}.cell.me .tot{color:var(--me)}.cell.opp .tot{color:var(--opp)}
+  .va{display:flex;flex-direction:column;flex:1}.va .lane{padding:10px 12px 4px}
+  .va .who{display:flex;justify-content:space-between;align-items:baseline;margin:8px 2px 5px;font-size:13px}.va .who .n.me{color:var(--me)}.va .who .n.opp{color:var(--opp)}.va .who .t{font-weight:800}
+  .va .pad{margin-top:auto;padding:12px;border-top:1px solid var(--line);background:var(--panel)}.va .keys{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .va .keys button{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 0;font-size:17px;font-weight:700}.va .keys button:disabled{opacity:.25}.va .keys button:active:not(:disabled){background:var(--accent)}.va .keys .wide{grid-column:span 2;color:var(--gold)}
+  .vb{display:flex;flex-direction:column;flex:1;padding:12px}.vb .hero{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;margin:4px 0 10px}
+  .vb .hero .side{text-align:center}.vb .hero .side .lbl{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vb .hero .side .big{font-size:42px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .vb .hero .me .big{color:var(--me)}.vb .hero .opp .big{color:var(--opp)}.vb .hero .vs{color:var(--dim);font-weight:800}
+  .vb .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.vb .fcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:11px;text-align:center}
+  .vb .fcard .cap{font-size:11px;color:var(--dim)}.vb .fcard .rollbig{font-size:30px;font-weight:800;letter-spacing:4px;margin:5px 0}.vb .fcard .pend{color:var(--dim);font-size:12px;min-height:16px}
+  .vb .deckwrap{margin-top:auto}.vb .deck{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}.vb .deck .drow{display:flex;gap:10px;justify-content:center}
+  .vb .pin{width:28px;height:38px;border-radius:50% 50% 45% 45%;background:#f4f6ff;border:2px solid #c9d2ff;position:relative}.vb .pin::after{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:15px;height:4px;background:var(--opp);border-radius:3px}
+  .vb .pin.down{background:transparent;border-style:dashed;border-color:var(--line);opacity:.4}.vb .pin.down::after{display:none}
+  .vb .bowl{background:var(--me);color:#062;font-weight:800;border-radius:14px;padding:14px;text-align:center;font-size:16px;margin-top:6px}
+  .vc{display:flex;flex-direction:column;flex:1;min-height:0}.vc .feed{flex:1;overflow-y:auto;padding:10px 12px 6px;display:flex;flex-direction:column;gap:7px}
+  .vc .frow{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:9px 11px}.vc .frow.active{border-color:var(--accent)}
+  .vc .frow .fh{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px}
+  .vc .line{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:2px 0}.vc .line .who{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vc .line.me .who{color:var(--me)}.vc .line.op .who{color:var(--opp)}
+  .vc .line .marks{font-weight:800;letter-spacing:2px}.vc .line .run{font-size:11px;color:var(--dim);min-width:30px;text-align:right}
+  .vc .entry{border-top:1px solid var(--line);background:var(--panel);padding:11px 13px;display:flex;flex-direction:column;gap:9px}
+  .vc .stepper{display:flex;align-items:center;justify-content:center;gap:16px}.vc .stepper button{width:50px;height:50px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);font-size:24px;font-weight:800}.vc .stepper .num{font-size:36px;font-weight:800;min-width:54px;text-align:center}
+  .vc .quick{display:flex;gap:8px}.vc .quick button{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 0;font-weight:700}.vc .commit{background:var(--me);color:#062;border-radius:12px;padding:13px;font-weight:800;text-align:center}
+  .winner{padding:16px;text-align:center}.winner .res{font-size:24px;font-weight:800;margin:4px 0}
+  .switch{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:#000;border:1px solid #444;border-radius:999px;padding:6px 8px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:50;font-size:13px}
+  .switch button{padding:4px 10px;border-radius:999px;background:#222;font-weight:700}.switch .lab{padding:0 6px;white-space:nowrap;color:#ddd}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="switch hidden" id="switch"></div>
+<script>
+/* ============================== ENGINE ============================== */
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const rnd=()=>Math.random(), irange=n=>Math.floor(Math.random()*Math.max(1,n));
+
+// style presets just FILL IN the real attributes (rev/speed/accuracy/consistency)
+const STYLE_PRESETS={
+  straight:{label:'Straight / classic', rev:180,speed:16,  acc:.92,cons:.90},
+  stroker :{label:'Stroker',            rev:300,speed:16.5,acc:.90,cons:.88},
+  tweener :{label:'Tweener',            rev:380,speed:17,  acc:.82,cons:.78},
+  cranker :{label:'Cranker / high-rev', rev:480,speed:18,  acc:.75,cons:.60},
+  twoHand :{label:'Two-handed',         rev:540,speed:18.5,acc:.72,cons:.55},
+};
+const TIERS={rookie:{label:'Rookie',mult:.52,avg:120},club:{label:'Club',mult:.80,avg:165},pro:{label:'Pro',mult:1.0,avg:200},elite:{label:'Elite',mult:1.12,avg:222}};
+
+// attributes -> simulation parameters (the causal model; validated in Node)
+function derive(attr, tierMult){
+  const rev01=clamp((attr.rev-150)/400,0,1);
+  const optSpeed=15+5*rev01, speedPen=clamp(0.05*Math.pow(attr.speed-optSpeed,2),0,.35);
+  return {tierMult,rev01,acc:attr.acc,cons:attr.cons,
+    baseStrike:clamp((0.15+0.58*rev01)*(1-speedPen),.05,.85),
+    baseSpare :clamp(0.5+0.45*attr.acc,.3,.99),
+    variance  :clamp((1.25-attr.cons)*(0.55+0.8*rev01),.2,1.6),
+    aggression:0.1+0.95*rev01,
+    idealFriction:0.62-0.22*rev01, frictionSens:0.4+1.25*rev01};
+}
+// ball coverstock shifts a bowler's friction comfort: urethane/plastic add control on the dry
+const BALL_BIAS={solid:-0.02,pearl:0,urethane:0.12,plastic:0.20};
+function eff(p, friction, sport, ballBias){
+  const ideal=p.idealFriction+(ballBias||0);
+  const sens=p.frictionSens*(sport?1.6:1);
+  const d=friction-ideal, sm=clamp(1-sens*d*d,.35,1.2);
+  let strike=p.baseStrike*p.tierMult*sm, spare=p.baseSpare*(.6+.4*p.tierMult);
+  if(sport){ strike*=(1-0.70*(1-p.cons)); spare*=(0.72+0.28*p.acc); }   // sport = no miss room; punishes low acc/cons
+  return {strike:clamp(strike,.02,.92),spare:clamp(spare,.3,.99),variance:p.variance*(1+1.6*Math.abs(d))*(sport?1.25:1)};
+}
+// lane condition + breakdown
+const VOL_FRICTION={light:.60,medium:.46,heavy:.32}, LEN_ADJ={short:.10,medium:0,long:-.06};
+function initialFriction(c){return clamp(VOL_FRICTION[c.volume]+LEN_ADJ[c.length]+(c.surface==='wood'?.05:0),.1,.85);}
+const COVER_OILMOVE={plastic:.4,urethane:.7,solid:1.1,pearl:1.2};
+function breakdownRate(onLane,cfg){
+  if(!cfg.breakdown||cfg.laneMode==='ignore')return 0;
+  const occ=cfg.laneMode==='manual'?cfg.manualCount:onLane.length;
+  const avgAgg=onLane.reduce((s,b)=>s+(0.1+0.95*clamp((b.attr.rev-150)/400,0,1)),0)/onLane.length;
+  const avgCov=onLane.reduce((s,b)=>s+COVER_OILMOVE[(b.ball&&b.ball.cover)||'pearl'],0)/onLane.length;
+  return 0.020*(occ/4)*(0.4+avgAgg)*avgCov;
+}
+const frictionAt=(lane,f)=>clamp(lane.initialFriction+lane.rate*f,.05,.98);
+function recommendBall(rev01, friction, forSpare){
+  if(forSpare)return {name:'Plastic spare ball',cover:'plastic',core:'symmetric',why:'goes straight at corner pins'};
+  const power=rev01>=.55;
+  if(friction<=.40)return power?{name:'Solid reactive · asymmetric',cover:'solid',core:'asymmetric',why:'reads heavy oil early, strong continuation'}:{name:'Solid reactive · symmetric',cover:'solid',core:'symmetric',why:'gets through the oil with control'};
+  if(friction>=.62)return power?{name:'Urethane · symmetric',cover:'urethane',core:'symmetric',why:'controls the burn, smooths over/under'}:{name:'Pearl reactive · symmetric',cover:'pearl',core:'symmetric',why:'length + gentle backend on the dry'};
+  return power?{name:'Pearl reactive · asymmetric',cover:'pearl',core:'asymmetric',why:'length then sharp backend on medium'}:{name:'Pearl reactive · symmetric',cover:'pearl',core:'symmetric',why:'clean and predictable on medium'};
+}
+// opponent sim
+function simReg(p){if(rnd()<p.strike)return[10];const sp=rnd()<.10*p.variance,first=sp?6+irange(3):5+irange(5),rem=10-first,so=sp?p.spare*.25:p.spare;return[first,Math.min((rnd()<so)?rem:irange(rem+1),rem)];}
+function simTen(p){const r=[],b=()=>rnd()<p.strike?10:5+irange(5);r.push(b());if(r[0]===10)r.push(b());else{const rem=10-r[0];r.push(rnd()<p.spare?rem:irange(rem+1));}if(r[0]+r[1]>=10)r.push(b());return r.map(x=>Math.min(x,10));}
+function simBowlerGame(b,lane){
+  const p=derive(b.attr,TIERS[b.tier].mult);
+  let ball=b.ball||recommendBall(p.rev01,lane.initialFriction+.07,false), switched=null;
+  const frames=[];
+  for(let i=0;i<10;i++){
+    const fr=frictionAt(lane,i);
+    // mid-game ball change: a power player goes to urethane to control a burnt lane
+    if(lane.allowBallChange && switched===null && p.rev01>.5 && fr>p.idealFriction+0.20 && ball.cover!=='urethane' && ball.cover!=='plastic'){
+      ball={name:'Urethane (ball down)',cover:'urethane',core:'symmetric',why:'controls the burn'}; switched=i;
+    }
+    const e=eff(p,fr,lane.sport,BALL_BIAS[ball.cover]);
+    frames.push(i<9?simReg(e):simTen(e));
+  }
+  b.switchFrame=switched; b.endBall=ball;
+  return frames;
+}
+// scoring
+function rollsFrom(f,i){const o=[];for(let k=i;k<f.length;k++){if(!f[k])continue;for(const r of f[k])o.push(r);}return o;}
+function tenthComplete(f){if(!f||!f.length)return false;if(f[0]===10)return f.length===3;if(f.length>=2&&f[0]+f[1]===10)return f.length===3;return f.length===2;}
+function cumulative(frames){const res=Array(10).fill(null);let tot=0;for(let i=0;i<10;i++){const f=frames[i];if(!f||!f.length)break;let fs=null;
+  if(i<9){if(f[0]===10){const b=rollsFrom(frames,i+1);if(b.length<2)break;fs=10+b[0]+b[1];}else if(f.length>=2){if(f[0]+f[1]===10){const b=rollsFrom(frames,i+1);if(b.length<1)break;fs=10+b[0];}else fs=f[0]+f[1];}else break;}
+  else{if(!tenthComplete(f))break;fs=f.reduce((a,b)=>a+b,0);}tot+=fs;res[i]=tot;}return res;}
+function lastTotal(frames){const c=cumulative(frames);for(let i=9;i>=0;i--)if(c[i]!=null)return c[i];return 0;}
+function glyphs(f,isT){if(!f)return[];const g=[];for(let i=0;i<f.length;i++){const r=f[i];if(isT){if(r===10)g.push('X');else if(i>0&&f[i-1]!==10&&f[i-1]+r===10)g.push('/');else g.push(r===0?'-':String(r));}else{if(i===0)g.push(r===10?'X':(r===0?'-':String(r)));else g.push((f[0]+r===10)?'/':(r===0?'-':String(r)));}}return g;}
+function handicap(scratch,b,cfg){const r=cfg.handicap;
+  if(r.mode==='scratch')return 0;
+  if(r.mode==='perBowler')return Math.max(0,b.handicap||0);          // each bowler's own league handicap
+  if(r.mode==='percent'){const a=b.avg??150;return Math.max(0,Math.round(r.pct/100*(r.basis-a)));}
+  return 0;}
+// human state machine
+function newHuman(){return{frames:[[]]};}
+const curIdx=h=>h.frames.length-1, curFrame=h=>h.frames[curIdx(h)];
+function legalMax(h){const i=curIdx(h),f=h.frames[i];if(i<9)return f.length===0?10:10-f[0];if(f.length===0)return 10;if(f.length===1)return f[0]===10?10:10-f[0];if(f[0]===10)return f[1]===10?10:10-f[1];return 10;}
+function frameDone(h,i){const f=h.frames[i];return i<9?(f[0]===10||f.length===2):tenthComplete(f);}
+const gameOver=h=>h.frames.length===10&&tenthComplete(h.frames[9]);
+function recordRoll(h,pins){if(gameOver(h))return false;pins=clamp(pins,0,legalMax(h));const i=curIdx(h);h.frames[i].push(pins);const d=frameDone(h,i);if(d&&i<9)h.frames.push([]);return d;}
+function completedFrames(h){let n=0;for(let i=0;i<h.frames.length;i++){if(h.frames[i].length&&frameDone(h,i))n++;else break;}return n;}
+// quick projected house average for create-preview (cheap sim)
+function projectAvg(attr,tier){const lane={initialFriction:.46,rate:0};let s=0,n=120;for(let k=0;k<n;k++)s+=lastTotal(simBowlerGame({attr,tier},lane));return Math.round(s/n);}
+
+/* ============================== STATE ============================== */
+const VARIANTS=['A','B','C'],VNAME={A:'Alley scoreboard',B:'VS duel',C:'One-thumb feed'};
+const ROSTER=[
+  // pro/elite style archetypes
+  {id:'reyes',name:'Dakota "Crank" Reyes',styleKey:'cranker',tier:'elite',division:'pba', scout:'Massive carry on oil; over/unders into splits once it dries.'},
+  {id:'halv', name:'Marge Halvorsen',     styleKey:'stroker',tier:'club', division:'pwba',scout:"Won't overpower you, won't miss a spare. Out-grinds people."},
+  {id:'kenji',name:'Kenji Tanaka',        styleKey:'twoHand',tier:'pro',  division:'pba', scout:'Modern power. Buries fresh house; cliffs on short/dry.'},
+  {id:'sol',  name:'Bianca Sol',          styleKey:'tweener',tier:'pro',  division:'pwba',scout:'Versatile all-rounder. No glaring weakness on medium.'},
+  {id:'priya',name:'Priya Nair',          styleKey:'twoHand',tier:'elite',division:'pwba',scout:'Highest ceiling here. Boom or bust as it transitions.'},
+  {id:'buddy',name:'Buddy Kowalski',      styleKey:'straight',tier:'club',division:'open',scout:'Pure spare shooter. Low ceiling, never beats himself.'},
+  // realistic league profiles (good on house, exposed on sport to varying degrees)
+  {id:'larry',name:'League Larry',  styleKey:'custom',tier:'club', division:'open',handicap:50,attr:{rev:280,speed:15.5,acc:.58,cons:.52},scout:'~160 house bowler. Sport patterns wreck him — can’t repeat shots.'},
+  {id:'sammy',name:'Scratch Sam',   styleKey:'custom',tier:'pro',  division:'open',handicap:13,attr:{rev:410,speed:17.5,acc:.77,cons:.72},scout:'~205 house scratch. Big game, but flat patterns expose him.'},
+  {id:'stacy',name:'Sport Stacy',   styleKey:'custom',tier:'elite',division:'open',handicap:0, attr:{rev:440,speed:18,  acc:.93,cons:.90},scout:'~230 and travels — accuracy holds up when it gets flat.'},
+].map(p=>({...p, handicap:p.handicap||0, attr:p.attr||{...STYLE_PRESETS[p.styleKey]}}));
+
+const DEFAULTS={cond:{alley:'Sunset Lanes',length:'medium',volume:'medium',surface:'synthetic',patternType:'house'},
+  human:{name:'You',styleKey:'stroker',avg:165,division:'open',handicap:0,ballChoice:'auto'},
+  selected:['halv','reyes'],
+  cfg:{breakdown:true,laneMode:'bySelection',manualCount:4,handicap:{mode:'scratch',pct:90,basis:220}}};
+let S=JSON.parse(JSON.stringify(DEFAULTS));
+S.screen='setup';S.custom=[];S.balls=[];S.opponents=[];S.revealed=0;S.lane=null;S.deckDown=0;S.stepVal=0;S.draft=null;S.showBall=false;
+
+const getVariant=()=>{const v=(new URLSearchParams(location.search).get('variant')||'A').toUpperCase();return VARIANTS.includes(v)?v:'A';};
+function setVariant(v){const u=new URL(location.href);u.searchParams.set('variant',v);history.replaceState({},'',u);render();}
+const allBowlers=()=>[...ROSTER,...S.custom];
+const findB=id=>allBowlers().find(b=>b.id===id);
+const humanAttr=()=>({...STYLE_PRESETS[S.human.styleKey]});
+const humanRev01=()=>clamp((humanAttr().rev-150)/400,0,1);
+function humanBall(c){if(S.human.ballChoice!=='auto'){const b=S.balls[+S.human.ballChoice];if(b)return b;}return recommendBall(humanRev01(),initialFriction(c),false);}
+
+function startGame(){const c=S.cond;
+  const opps=S.selected.map(id=>{const p=findB(id);return {...p,avg:TIERS[p.tier].avg,ball:recommendBall(clamp((p.attr.rev-150)/400,0,1),initialFriction(c)+.07,false)};});
+  S.opponents=opps;
+  const onLane=[{attr:humanAttr(),ball:humanBall(c)},...opps];
+  S.lane={initialFriction:initialFriction(c),rate:breakdownRate(onLane,S.cfg),sport:c.patternType==='sport',allowBallChange:S.cfg.breakdown};
+  opps.forEach(o=>o.game=simBowlerGame(o,S.lane));
+  S.human.game=newHuman();S.revealed=0;S.deckDown=0;S.stepVal=0;S.screen='play';render();}
+function bowl(pins){if(S.screen!=='play')return;const d=recordRoll(S.human.game,pins);if(d)S.revealed=Math.min(10,completedFrames(S.human.game));S.deckDown=0;S.stepVal=0;if(gameOver(S.human.game)){S.revealed=10;S.screen='done';}render();}
+const oppFrames=o=>o.game?o.game.slice(0,S.revealed):[];
+function oppPadded(o){const out=[];for(let i=0;i<10;i++)out.push(i<S.revealed?o.game[i]:[]);return out;}
+function standings(useHcp){const rows=[];const hb={handicap:S.human.handicap,avg:S.human.avg};const hs=lastTotal(S.human.game.frames);
+  rows.push({name:S.human.name,me:true,styleKey:S.human.styleKey,scratch:hs,hcp:handicap(hs,hb,S.cfg),sw:null});
+  S.opponents.forEach(o=>{const sc=lastTotal(oppFrames(o));rows.push({name:o.name,me:false,styleKey:o.styleKey,scratch:sc,hcp:handicap(sc,o,S.cfg),sw:o.switchFrame});});
+  rows.forEach(r=>r.total=useHcp?r.scratch+r.hcp:r.scratch);rows.sort((a,b)=>b.total-a.total);return rows;}
+
+/* ============================== RENDER ============================== */
+const app=()=>document.getElementById('app');
+const h=html=>{const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;};
+const styleShort=k=>({straight:'Straight',stroker:'Stroker',tweener:'Tweener',cranker:'Cranker',twoHand:'Two-hand',custom:'Custom'}[k]||'Custom');
+function render(){const el=app();el.innerHTML='';const sw=document.getElementById('switch');
+  if(S.screen==='setup'){sw.classList.add('hidden');el.appendChild(renderSetup());return;}
+  if(S.screen==='create'){sw.classList.add('hidden');el.appendChild(renderCreate());return;}
+  if(DEMO){sw.classList.add('hidden');}else{sw.classList.remove('hidden');renderSwitch();}el.appendChild(renderTop());
+  const v=getVariant();if(S.screen==='done')el.appendChild(renderDone());el.appendChild(renderLeaderboard());
+  el.appendChild(v==='A'?renderA():v==='B'?renderB():renderC());}
+function renderTop(){const fr=Math.min(10,curIdx(S.human.game)+1);
+  const t=h(`<div class="topbar"><span class="tag">🎳 BOWL-OFF</span><span class="sub">· ${S.cond.length}/${S.cond.volume} oil · Fr ${fr}/10</span><span class="spacer"></span><button class="ghost" id="reset">↺ New</button></div>`);
+  t.querySelector('#reset').onclick=()=>{S.screen='setup';render();};return t;}
+
+/* ---------- attribute bars ---------- */
+function attrBars(attr){const rev01=clamp((attr.rev-150)/400,0,1);
+  const pwr=1+rev01*4, acc=1+(attr.acc-.6)/.35*4, con=1+(attr.cons-.5)/.42*4;
+  const mk=(l,v)=>`<div class="bar"><span style="width:34px">${l}</span><span class="track"><span class="fill" style="width:${clamp(v,0,5)*20}%"></span></span></div>`;
+  return `<div class="bars">${mk('PWR',pwr)}${mk('ACC',acc)}${mk('CON',con)}</div>`;}
+
+/* ---------- SETUP ---------- */
+function renderSetup(){const c=S.cond,hu=S.human,cfg=S.cfg;const recBall=humanBall(c);
+  const seg=(opts,val,g)=>`<div class="seg">${opts.map(o=>`<button class="${o[0]===val?'on':''}" data-grp="${g}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+  const ballOpts=[['auto',`Auto · ${recBall.name}`],...S.balls.map((b,i)=>[String(i),`${b.name} (${b.cover})`])];
+  const s=h(`<div class="setup">
+    <h1>Set up your bowl-off</h1>
+    <p class="lede">Sane defaults — just hit start. Advanced has handicap, breakdown & lane traffic.</p>
+    <h3 class="sec">Lane & conditions</h3>
+    <div class="field"><label>Home alley</label><input id="alley" value="${c.alley}"></div>
+    <div class="field"><label>Pattern length</label>${seg([['short','Short'],['medium','Medium'],['long','Long']],c.length,'length')}</div>
+    <div class="field"><label>Oil volume</label>${seg([['light','Light'],['medium','Medium'],['heavy','Heavy']],c.volume,'volume')}</div>
+    <div class="field"><label>Lane surface</label>${seg([['synthetic','Synthetic'],['wood','Wood']],c.surface,'surface')}</div>
+    <div class="field"><label>Pattern type</label>${seg([['house','House (forgiving)'],['sport','Sport (flat / demanding)']],c.patternType,'ptype')}</div>
+    <h3 class="sec">Your game</h3>
+    <div class="row2"><div class="field"><label>Your style</label><select id="hstyle">${Object.entries(STYLE_PRESETS).map(([k,v])=>`<option value="${k}" ${k===hu.styleKey?'selected':''}>${v.label}</option>`).join('')}</select></div>
+      <div class="field"><label>Your average</label><input id="havg" type="number" inputmode="numeric" value="${hu.avg}"></div></div>
+    <div class="row2"><div class="field"><label>Your handicap (pins)</label><input id="hhcp" type="number" inputmode="numeric" value="${hu.handicap}"></div>
+      <div class="field"><label>Division (label only)</label>${seg([['open','Open'],['pba','PBA'],['pwba','PWBA']],hu.division,'hdiv')}</div></div>
+    <h3 class="sec">Your equipment <button class="add" id="newball">＋ new ball</button></h3>
+    <div class="field"><label>Your ball</label><select id="hball">${ballOpts.map(o=>`<option value="${o[0]}" ${String(hu.ballChoice)===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+    ${S.showBall?ballForm():''}
+    <div class="ball">🎳 Recommended for your style on this lane: <b>${recBall.name}</b> — ${recBall.why}.</div>
+    <h3 class="sec">Choose rival(s) <span class="add">${S.selected.length}/3</span></h3>
+    <div class="roster" id="roster">${allBowlers().map(pcard).join('')}<button class="pcard new" id="createcard">＋ Create bowler</button></div>
+    <details><summary>Advanced — handicap, breakdown, lane traffic</summary><div class="body">
+      <div class="field"><label>Handicap system</label>${seg([['scratch','Scratch'],['perBowler','Per bowler'],['percent','% of diff']],cfg.handicap.mode,'hcpmode')}</div>
+      <div class="row2" id="hcpdetail">${hcpDetail(cfg)}</div>
+      <div class="field"><label>Lane oil breakdown</label>${seg([['on','On'],['off','Off']],cfg.breakdown?'on':'off','breakdown')}</div>
+      <div class="field"><label>Whose traffic breaks it down?</label>${seg([['ignore','Ignore'],['bySelection','This match'],['manual','Set count']],cfg.laneMode,'lanemode')}</div>
+      ${cfg.laneMode==='manual'?`<div class="field"><label>Bowlers actually on the lane</label><input id="manual" type="number" inputmode="numeric" value="${cfg.manualCount}"></div>`:''}
+    </div></details></div>`);
+  s.querySelectorAll('.seg button[data-grp]').forEach(b=>b.onclick=()=>{const g=b.dataset.grp,v=b.dataset.v;
+    ({length:()=>c.length=v,volume:()=>c.volume=v,surface:()=>c.surface=v,ptype:()=>c.patternType=v,hdiv:()=>hu.division=v,
+      hcpmode:()=>cfg.handicap.mode=v,breakdown:()=>cfg.breakdown=(v==='on'),lanemode:()=>cfg.laneMode=v})[g]();render();});
+  s.querySelector('#alley').oninput=e=>c.alley=e.target.value;
+  s.querySelector('#hstyle').onchange=e=>{hu.styleKey=e.target.value;render();};
+  s.querySelector('#havg').oninput=e=>hu.avg=+e.target.value||0;
+  s.querySelector('#hhcp').oninput=e=>hu.handicap=+e.target.value||0;
+  s.querySelector('#hball').onchange=e=>{hu.ballChoice=e.target.value;render();};
+  s.querySelector('#newball').onclick=()=>{S.showBall=!S.showBall;render();};
+  const man=s.querySelector('#manual');if(man)man.oninput=e=>cfg.manualCount=+e.target.value||1;
+  s.querySelectorAll('#hcpdetail input').forEach(i=>i.oninput=e=>cfg.handicap[e.target.dataset.k]=+e.target.value||0);
+  s.querySelectorAll('.pcard[data-id]').forEach(card=>card.onclick=()=>toggleRival(card.dataset.id));
+  s.querySelector('#createcard').onclick=()=>openCreate();
+  const bf=s.querySelector('#ballform');if(bf)wireBallForm(bf);
+  const cta=h(`<button class="cta" id="start" ${S.selected.length?'':'disabled'}>${S.selected.length?`Start vs ${S.selected.length} rival${S.selected.length>1?'s':''} →`:'Pick at least one rival'}</button>`);
+  cta.onclick=startGame;const wrap=document.createElement('div');wrap.appendChild(s);wrap.appendChild(cta);return wrap;}
+function hcpDetail(cfg){const m=cfg.handicap.mode;
+  if(m==='percent')return `<div class="field"><label>Percent</label><input type="number" data-k="pct" value="${cfg.handicap.pct}"></div><div class="field"><label>Basis</label><input type="number" data-k="basis" value="${cfg.handicap.basis}"></div>`;
+  if(m==='perBowler')return `<div class="gtag" style="grid-column:span 2">Uses each bowler's own handicap (set yours above; League Larry +50, Scratch Sam +13, pros 0). Want the Asia flat-8 for a bowler? just give them a handicap of 8.</div>`;
+  return `<div class="gtag" style="grid-column:span 2">Scratch — everyone off the same line, no handicap.</div>`;}
+function pcard(p){const sel=S.selected.includes(p.id);
+  return `<button class="pcard ${sel?'sel':''}" data-id="${p.id}"><span class="pick">${sel?'✓':'+'}</span>${p.custom?'<span class="badge">★ yours</span>':''}
+    <div class="nm">${p.name}</div><div class="st">${styleShort(p.styleKey)} · ${TIERS[p.tier].label} · <span class="gtag">${p.division.toUpperCase()}${p.handicap?' · +'+p.handicap:''}</span></div>
+    <div class="specs">${p.attr.rev} rpm · ${p.attr.speed} mph</div>${attrBars(p.attr)}<div class="scout">${p.scout||''}</div></button>`;}
+function toggleRival(id){const i=S.selected.indexOf(id);if(i>=0)S.selected.splice(i,1);else{if(S.selected.length>=3)S.selected.shift();S.selected.push(id);}render();}
+
+/* ---------- ball create form (inline) ---------- */
+function ballForm(){return `<div id="ballform" class="field" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px">
+  <input id="bn" placeholder="Ball name (e.g. My Pearl)">
+  <div class="row2"><select id="bcov">${['pearl','solid','urethane','plastic'].map(x=>`<option value="${x}">${x} cover</option>`).join('')}</select>
+    <select id="bcore">${['symmetric','asymmetric'].map(x=>`<option value="${x}">${x} core</option>`).join('')}</select></div>
+  <button class="cta sub" id="addball" style="position:static;width:100%;transform:none;box-shadow:none;padding:11px">Add ball</button></div>`;}
+function wireBallForm(bf){bf.querySelector('#addball').onclick=()=>{const n=bf.querySelector('#bn').value.trim()||'Custom ball';
+  S.balls.push({name:n,cover:bf.querySelector('#bcov').value,core:bf.querySelector('#bcore').value,why:'your custom ball'});
+  S.human.ballChoice=String(S.balls.length-1);S.showBall=false;render();};}
+
+/* ---------- CREATE BOWLER screen ---------- */
+function openCreate(){S.draft={name:'',division:'open',handicap:0,tier:'pro',styleKey:'cranker',attr:{...STYLE_PRESETS.cranker},scout:''};S.screen='create';render();}
+function renderCreate(){const d=S.draft;const proj=projectAvg(d.attr,d.tier);
+  const seg=(opts,val,g)=>`<div class="seg">${opts.map(o=>`<button class="${o[0]===val?'on':''}" data-grp="${g}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`;
+  const sl=(k,min,max,step,unit,val)=>`<div class="slider field"><label>${k} <b>${val}${unit}</b></label><input type="range" data-a="${k}" min="${min}" max="${max}" step="${step}" value="${val}"></div>`;
+  const s=h(`<div class="setup">
+    <h1>Create a bowler</h1>
+    <p class="lede">Start from a style, then dial in revs &amp; speed. You bring the stats — the engine bowls them.</p>
+    <div class="note">We don't model gender — revs &amp; speed determine ball motion. Division is just a label. And we don't ship real bowlers' names/likenesses or ball brands (IP); for personal use you're free to mimic a champion's known stats.</div>
+    <div class="field"><label>Name</label><input id="dn" value="${d.name}" placeholder="e.g. The Belmo-style two-hander"></div>
+    <div class="row2"><div class="field"><label>Tier</label>${seg([['rookie','Rk'],['club','Cl'],['pro','Pro'],['elite','El']],d.tier,'t')}</div>
+      <div class="field"><label>Handicap (pins)</label><input id="dh" type="number" inputmode="numeric" value="${d.handicap}"></div></div>
+    <div class="field"><label>Division (label only)</label>${seg([['open','Open'],['pba','PBA'],['pwba','PWBA']],d.division,'div')}</div>
+    <h3 class="sec">Quick-fill from a style</h3>
+    ${seg(Object.keys(STYLE_PRESETS).map(k=>[k,styleShort(k)]),d.styleKey,'preset')}
+    <h3 class="sec">Attributes (the real drivers)</h3>
+    ${sl('rev',150,600,10,' rpm',d.attr.rev)}
+    ${sl('speed',13,22,0.5,' mph',d.attr.speed)}
+    ${sl('acc',60,98,1,'% accuracy',Math.round(d.attr.acc*100))}
+    ${sl('cons',50,95,1,'% consistency',Math.round(d.attr.cons*100))}
+    <div class="ball">Projected house average: <b>${proj}</b> · ${attrPreview(d.attr)}</div>
+    <div class="field"><label>Scouting note (optional)</label><input id="ds" value="${d.scout}" placeholder="e.g. Huge on oil, sketchy when it dries"></div>
+  </div>`);
+  s.querySelectorAll('.seg button[data-grp]').forEach(b=>b.onclick=()=>{const g=b.dataset.grp,v=b.dataset.v;
+    if(g==='div')d.division=v;else if(g==='t')d.tier=v;else if(g==='preset'){d.styleKey=v;d.attr={...STYLE_PRESETS[v]};}render();});
+  s.querySelector('#dn').oninput=e=>d.name=e.target.value;
+  s.querySelector('#dh').oninput=e=>d.handicap=+e.target.value||0;
+  s.querySelector('#ds').oninput=e=>d.scout=e.target.value;
+  s.querySelectorAll('input[type=range]').forEach(r=>r.oninput=e=>{const a=e.target.dataset.a,v=+e.target.value;
+    if(a==='acc')d.attr.acc=v/100;else if(a==='cons')d.attr.cons=v/100;else d.attr[a]=v; d.styleKey='custom'; render();});
+  const save=h(`<button class="cta" id="save">Save &amp; add to roster</button>`);
+  save.onclick=()=>{const id='c'+(S.custom.length+1)+Date.now()%1000;
+    S.custom.push({id,name:d.name.trim()||'My bowler',styleKey:d.styleKey,tier:d.tier,division:d.division,handicap:d.handicap,attr:{...d.attr},scout:d.scout.trim(),custom:true});
+    if(S.selected.length>=3)S.selected.shift();S.selected.push(id);S.screen='setup';render();};
+  const back=h(`<button class="cta sub" id="back" style="bottom:calc(70px + env(safe-area-inset-bottom))">Cancel</button>`);
+  back.onclick=()=>{S.screen='setup';render();};
+  const wrap=document.createElement('div');wrap.appendChild(s);wrap.appendChild(back);wrap.appendChild(save);return wrap;}
+function attrPreview(attr){const p=derive(attr,1);return `strike ${Math.round(p.baseStrike*100)}% · spare ${Math.round(p.baseSpare*100)}% · ${p.variance>1.1?'high':p.variance>.7?'med':'low'} variance`;}
+
+/* ---------- LEADERBOARD ---------- */
+function renderLeaderboard(){const useHcp=S.cfg.handicap.mode!=='scratch';const rows=standings(useHcp);
+  const fr=Math.min(9,curIdx(S.human.game)),fric=frictionAt(S.lane,fr);
+  return h(`<div class="lb">${rows.map((r,i)=>`<div class="lbrow ${r.me?'me':''}"><span class="rank">${i+1}</span>
+    <span class="who"><div class="n ${r.me?'me':''}">${r.name}</div><div class="meta">${styleShort(r.styleKey)}${r.sw!=null&&S.revealed>r.sw?` · 🔄 ball down F${r.sw+1}`:''}</div></span>
+    ${useHcp&&r.hcp?`<span class="hcp">+${r.hcp}</span>`:''}<span class="tot" style="color:${r.me?'var(--me)':'var(--opp)'}">${r.total}</span></div>`).join('')}
+    <div class="lanestate"><span>lane</span><span class="meter"><span class="f" style="width:${Math.round(fric*100)}%"></span></span><span>${fric<.4?'oily':fric<.6?'transitioning':'burnt'}</span></div></div>`);}
+
+/* ---------- VARIANTS ---------- */
+function renderA(){const me=S.human.game.frames,cur=gameOver(S.human.game)?-1:curIdx(S.human.game);
+  const wrap=h(`<div class="va"><div class="lane">
+    <div class="who"><span class="n me">YOU · ${S.cond.alley}</span><span class="t" style="color:var(--me)">${lastTotal(me)}</span></div>${sheet(me,'me',cur)}
+    ${S.opponents.map(o=>`<div class="who"><span class="n opp">${o.name}</span><span class="t" style="color:var(--opp)">${lastTotal(oppFrames(o))}</span></div>${sheet(oppPadded(o),'opp',-1)}`).join('')}
+    </div>${S.screen==='play'?keypad():''}</div>`);
+  wrap.querySelectorAll('.keys button[data-p]').forEach(b=>{if(!b.disabled)b.onclick=()=>bowl(+b.dataset.p);});return wrap;}
+function sheet(frames,who,cur){const cum=cumulative(frames);let html=`<div class="sheet">`;
+  for(let i=0;i<10;i++){const f=frames[i],isT=i===9,g=glyphs(f,isT),slots=isT?3:2;let rolls='';for(let k=0;k<slots;k++)rolls+=`<span>${g[k]??''}</span>`;
+    html+=`<div class="cell ${who} ${cur===i?'cur':''}"><div class="rolls">${rolls}</div><div class="tot">${cum[i]!=null?cum[i]:''}</div></div>`;}return html+`</div>`;}
+function keypad(){const max=legalMax(S.human.game);let b='';for(let n=0;n<=10;n++)b+=`<button data-p="${n}" ${n>max?'disabled':''}>${n===10?'X':n}</button>`;
+  return `<div class="pad"><div class="keys">${b}<button class="wide" data-p="${max}">Spare /</button></div></div>`;}
+function renderB(){const meTot=lastTotal(S.human.game.frames);
+  const lead=[...S.opponents].sort((a,b)=>lastTotal(oppFrames(b))-lastTotal(oppFrames(a)))[0],leadTot=lead?lastTotal(oppFrames(lead)):0;
+  const i=Math.min(curIdx(S.human.game),9),myG=glyphs(S.human.game.frames[i]||[],i===9).join(' ')||'·';
+  const oppLast=(lead&&S.revealed>0)?glyphs(lead.game[S.revealed-1],(S.revealed-1)===9).join(' '):'…';
+  const max=legalMax(S.human.game),down=S.deckDown;
+  const wrap=h(`<div class="vb"><div class="hero"><div class="side me"><div class="lbl">YOU</div><div class="big">${meTot}</div></div>
+    <div class="vs">VS</div><div class="side opp"><div class="lbl">${lead?lead.name.split(' ')[0]:'—'} (lead)</div><div class="big">${leadTot}</div></div></div>
+    <div class="cards"><div class="fcard"><div class="cap">Your frame ${i+1}</div><div class="rollbig">${myG}</div><div class="pend">${gameOver(S.human.game)?'final':'bowling…'}</div></div>
+    <div class="fcard"><div class="cap">${lead?lead.name.split(' ')[0]:''} fr ${Math.max(1,S.revealed)}</div><div class="rollbig">${oppLast}</div><div class="pend">${S.revealed>0?'revealed':'waiting'}</div></div></div>
+    ${S.screen==='play'?`<div class="deckwrap"><div class="deck">${pinDeck(max,down)}</div><div class="bowl" id="bowlbtn">Knock down ${down} → Bowl</div></div>`:''}</div>`);
+  if(S.screen==='play'){wrap.querySelectorAll('.pin').forEach(p=>p.onclick=()=>{const idx=+p.dataset.i;S.deckDown=clamp((idx+1===S.deckDown)?idx:(idx+1),0,max);render();});
+    wrap.querySelector('#bowlbtn').onclick=()=>bowl(S.deckDown);}return wrap;}
+function pinDeck(standing,down){const rows=[4,3,2,1];let idx=0,html='';for(const r of rows){html+='<div class="drow">';for(let k=0;k<r;k++){const a=idx<standing,fe=a&&idx<down;html+=`<div class="pin ${a?'':'down'} ${fe?'down':''}" data-i="${idx}" style="${a?'':'visibility:hidden'}"></div>`;idx++;}html+='</div>';}return html;}
+function renderC(){const active=Math.min(curIdx(S.human.game),9),meCum=cumulative(S.human.game.frames),oppCum=S.opponents.map(o=>cumulative(oppPadded(o)));let rows='';
+  for(let i=0;i<=Math.min(active,9);i++){const meG=glyphs(S.human.game.frames[i],i===9).join(' ')||'…';
+    let lines=`<div class="line me"><span class="who">${S.human.name} · ${meG}</span><span class="run">${meCum[i]!=null?meCum[i]:'—'}</span></div>`;
+    S.opponents.forEach((o,oi)=>{const og=(i<S.revealed)?glyphs(o.game[i],i===9).join(' '):'⏳';lines+=`<div class="line op"><span class="who">${o.name.split(' ')[0]} · ${og}</span><span class="run">${oppCum[oi][i]!=null?oppCum[oi][i]:'—'}</span></div>`;});
+    rows+=`<div class="frow ${i===active&&!gameOver(S.human.game)?'active':''}"><div class="fh"><span>Frame ${i+1}</span></div>${lines}</div>`;}
+  const max=legalMax(S.human.game),sv=Math.min(S.stepVal,max);
+  const wrap=h(`<div class="vc"><div class="feed" id="feed">${rows}</div>
+    ${S.screen==='play'?`<div class="entry"><div class="stepper"><button data-d="-1">−</button><div class="num">${sv}${sv===10?' 🎳':''}</div><button data-d="1">+</button></div>
+      <div class="quick"><button data-set="0">Gutter</button><button data-set="${max}">${curFrame(S.human.game).length===0?'Strike':'Spare'}</button></div>
+      <div class="commit" id="commit">Log ${sv} pin${sv===1?'':'s'}</div></div>`:''}</div>`);
+  if(S.screen==='play'){wrap.querySelectorAll('.stepper button').forEach(b=>b.onclick=()=>{S.stepVal=clamp(sv+(+b.dataset.d),0,max);render();});
+    wrap.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{S.stepVal=Math.min(max,+b.dataset.set);render();});wrap.querySelector('#commit').onclick=()=>bowl(sv);}
+  setTimeout(()=>{const f=wrap.querySelector('#feed');if(f)f.scrollTop=f.scrollHeight;},0);return wrap;}
+function renderDone(){const useHcp=S.cfg.handicap.mode!=='scratch';const rows=standings(useHcp),win=rows[0];
+  return h(`<div class="winner"><div class="res">${win.me?'You win! 🏆':win.name.split(' ')[0]+' wins'}</div>
+    <div class="sub" style="color:var(--dim)">${useHcp?'with handicap':'scratch'} · lane ${frictionAt(S.lane,9)<.6?'still carrying':'burnt up'}</div></div>`);}
+function renderSwitch(){const sw=document.getElementById('switch'),v=getVariant();
+  sw.innerHTML=`<button id="prev">←</button><span class="lab">${v} — ${VNAME[v]}</span><button id="next">→</button>`;
+  const cyc=d=>{const i=VARIANTS.indexOf(v);setVariant(VARIANTS[(i+d+VARIANTS.length)%VARIANTS.length]);};
+  sw.querySelector('#prev').onclick=()=>cyc(-1);sw.querySelector('#next').onclick=()=>cyc(1);}
+document.addEventListener('keydown',e=>{if(S.screen!=='play'&&S.screen!=='done')return;const tag=(document.activeElement||{}).tagName;if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const v=getVariant(),i=VARIANTS.indexOf(v),d=e.key==='ArrowRight'?1:-1;setVariant(VARIANTS[(i+d+VARIANTS.length)%VARIANTS.length]);}});
+
+// ?demo=1 — auto-start a mid-game bowl-off (for the layouts gallery). Opponents are random but plausible.
+const DEMO=new URLSearchParams(location.search).get('demo')==='1';
+function setupDemo(){S.selected=['reyes','halv'];startGame();[10,7,3,10,10,9,1,10,8,1].forEach(p=>recordRoll(S.human.game,p));S.revealed=completedFrames(S.human.game);}
+if(DEMO)setupDemo();
+render();
+</script>
+</body>
+</html>

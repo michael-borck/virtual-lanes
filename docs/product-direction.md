@@ -1,0 +1,99 @@
+# VirtualLanes — Product Direction & Decisions
+
+> Living record of the product/architecture decisions made while shaping VirtualLanes from a
+> Python simulation library into a phone-first bowling companion app. Capture-as-we-go so we
+> don't lose the thread between sessions. (Not auto-generated; edit freely.)
+
+## Vision
+
+A **phone-first bowling companion** for real bowlers, with two modes:
+
+1. **Bowl-off (Compete)** — you bowl your *real* frames at the alley; a chosen rival is
+   *simulated* and revealed frame-by-frame beside you. Live head-to-head. Makes practice fun
+   and competitive. (Prototype: `prototype/bowl-off.html`.)
+2. **Lane Read (Study)** — journal *real* shots: what you saw → decided → happened (V/X vs
+   video), find misread patterns. (Exists today as **LaneRead**, deployed at laneread.com.)
+
+You never simulate the human in either mode — you enter your real rolls/observations.
+
+## Platform & architecture
+
+- **One PWA, two modes** — not two apps. PWA storage is partitioned per origin, so one origin =
+  shared offline history with **no backend, no account**. The "two apps" feel comes from a
+  **launch mode-picker** ("Compete or Study?") + **bottom-tab** switching, not two installs.
+- **Offline-first**, local storage (localStorage/IndexedDB). Bowling alleys = bad signal; no
+  per-frame round-trips.
+- **PWA now → Capacitor later** to reach App Store / Play Store with the *same* codebase. Don't
+  ship two native apps (same sandboxing problem as two PWAs).
+- **Backend/accounts deferred** to the future cloud-analytics / AI phase (what LaneRead's roadmap
+  already teases). Only then does splitting into truly separate apps become viable.
+- **Recommended stack:** SvelteKit + TypeScript (least boilerplate, great PWA story); Vite+React
+  is the fallback if more examples/AI-help matter. Tabbed shell: `[Bowl-off] [Lane Read] [History] [Settings]`.
+
+## Unified data model
+
+Both modes produce the **same `Game` record** (this is what makes them one app):
+
+```
+Game {
+  id, date, alley, condition {length, volume, surface, patternType: house|sport},
+  yourBall(s), frames: [your rolls], score,
+  mode: 'bowloff' | 'practice',
+  // bowl-off only:  opponents: [...], result
+  // lane-read only: shots: [{ saw, decided, happened: V|X, emotion, adjustments }]
+}
+```
+
+**History/analytics is the backbone and the long-term value** (score trends, performance by
+pattern, misread patterns). One timeline of every game, simulated and real.
+
+## Simulation model (validated in Node; ported from the Python repo)
+
+- **Causal levers = rev rate + ball speed + accuracy + consistency.** "Style" (stroker / cranker /
+  two-hander / straight / tweener) is just a **preset that fills those in**. Tier (rookie→elite)
+  scales level. → enables "mimic a champion by their stats."
+- **Lane conditions:** pattern length, oil volume, surface, and **house vs sport** (sport removes
+  miss room → punishes low accuracy/consistency).
+- **Oil breakdown:** lane friction rises per frame; rate = traffic × revs (aggression) × coverstock.
+  More bowlers on the lane → faster burn. Lane-traffic config: ignore / by-match / manual count.
+- **Mid-game ball change:** a power player switches to urethane when the lane burns past comfort.
+- **Ball recommender:** generic covers/cores (plastic/urethane/solid/pearl × sym/asym). No brands.
+
+## Gender — resolved (and deliberately neutral)
+
+- Gender is **NOT a simulation input.** The real average difference lives in **rev rate + ball
+  speed** (power/leverage; the fixed 16 lb ball cap compounds it) plus participation depth — not a
+  bowling-specific rule. So we model revs/speed and **don't encode gender at all**.
+- **Division** (Open / PBA / PWBA) is a **cosmetic label** with zero gameplay effect.
+- **Handicap** is a plain per-bowler number (the human can enter their league handicap). Modes:
+  scratch / per-bowler / % of difference. The Asia "flat-8 for females" = just give a bowler a
+  handicap of 8. No gender mechanic, no debate.
+
+## IP / identity
+
+Ship only **fictional** bowlers and **generic** ball families. No real names, likenesses, or ball
+brands (right-of-publicity / trademark). Users may **privately** create profiles that mimic a
+champion's known stats for personal use. Don't let a future sharing feature publish real
+names/likenesses.
+
+## Personas
+
+- Style archetypes (cranker/stroker/two-hander/etc.) across tiers.
+- **League profiles:** League Larry (~160, house basher, lost on sport), Scratch Sam (~205,
+  exposed on sport), Sport Stacy (~230, holds up on sport).
+- **Create-your-own** bowlers (rev/speed/acc/cons sliders) and balls (cover/core).
+
+## Open questions
+
+- **Which bowl-off screen layout** (A Alley scoreboard / B VS duel / C One-thumb feed) to carry
+  into the real PWA. Decide by feel on a phone.
+- Does the house↔sport swing and the ball-change moment feel real?
+
+## Existing assets
+
+- `prototype/bowl-off.html` — throwaway phone prototype; engine validated in Node. Fold the
+  winning layout + the validated engine into the real PWA, then delete.
+- **LaneRead** (separate repo `~/Projects/lane-read`, deployed laneread.com) — mature vanilla
+  single-file tracker. Becomes the **Study mode**; port into the PWA. laneread.com can stay as a
+  marketing front door. Don't merge the two prototype codebases prematurely — converge on the
+  shared `Game` model, then build both into the real PWA.

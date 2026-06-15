@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- THROWAWAY — side-by-side gallery of the 3 bowl-off layouts, populated mid-game.
+     Each frame is the REAL prototype in ?demo mode (random-but-plausible opponents).
+     Serve with the rest:  python3 -m http.server 8000 -d prototype  →  /layouts.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>VirtualLanes — Bowl-off layouts</title>
+<style>
+  :root{--bg:#070b18;--ink:#eef1fb;--dim:#9aa6cc;--accent:#6c8cff;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,system-ui,Segoe UI,Roboto,sans-serif;padding:22px 14px 60px}
+  header{max-width:760px;margin:0 auto 8px}
+  h1{font-size:22px;margin:0 0 4px}
+  p{color:var(--dim);margin:0 0 6px;max-width:760px;margin-inline:auto}
+  .hint{font-size:13px}
+  .gallery{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;padding:18px 0}
+  .item{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .cap{font-weight:700}
+  .cap small{display:block;color:var(--dim);font-weight:400;font-size:12px;max-width:300px;text-align:center}
+  .phone{width:min(380px,92vw);height:760px;max-height:82vh;border:9px solid #000;border-radius:34px;overflow:hidden;background:#0b1020;box-shadow:0 14px 50px rgba(0,0,0,.5)}
+  .phone iframe{width:100%;height:100%;border:0;display:block}
+  .reload{display:inline-block;margin-top:4px;color:var(--accent);font-size:13px;cursor:pointer;border:1px solid #2b3556;border-radius:10px;padding:6px 12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎳 Bowl-off — the three layouts</h1>
+  <p>Same mid-game state, three designs. They're live (the real prototype), so the rival's numbers are random each load — tap reload for a fresh game. The thing to judge is the <b>structure</b>, not the scores.</p>
+  <p class="hint">Tip: which feels best one-handed at the alley? Mix-and-match is welcome ("header from B, entry from C").</p>
+  <span class="reload" onclick="document.querySelectorAll('iframe').forEach(f=>f.src=f.src)">↺ reload all</span>
+</header>
+<div class="gallery">
+  <div class="item"><div class="cap">A — Alley scoreboard<small>Both full scoresheets always visible, like the overhead monitor. Numeric keypad entry. Data-dense.</small></div>
+    <div class="phone"><iframe src="bowl-off.html?demo=1&variant=A" loading="eager"></iframe></div></div>
+  <div class="item"><div class="cap">B — VS duel<small>Big head-to-head totals + current-frame cards vs the leader. Tap-the-pins entry. Game-like.</small></div>
+    <div class="phone"><iframe src="bowl-off.html?demo=1&variant=B" loading="eager"></iframe></div></div>
+  <div class="item"><div class="cap">C — One-thumb feed<small>Vertical timeline, you vs each rival per frame. Big +/− stepper entry. One-handed.</small></div>
+    <div class="phone"><iframe src="bowl-off.html?demo=1&variant=C" loading="eager"></iframe></div></div>
+</div>
+</body>
+</html>
