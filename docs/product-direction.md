@@ -11,14 +11,19 @@ A **phone-first bowling companion** for real bowlers, with three modes:
 1. **Bowl-off (Compete)** — you bowl your *real* frames at the alley; a chosen rival is
    *simulated* and revealed frame-by-frame beside you. Live head-to-head. Makes practice fun
    and competitive. (Prototype: `prototype/bowl-off.html`.)
-2. **Lane Read (Study)** — journal *real* shots: what you saw → decided → happened (V/X vs
-   video), find misread patterns. (Exists today as **LaneRead**, deployed at laneread.com.)
+2. **Journal (Study)** — record *real* shots: what you saw → decided → happened (V/X vs video),
+   find misread patterns. (Functionality from the original **LaneRead** proof-of-concept.)
 3. **Trace (Measure)** — *coming soon.* Film a shot; auto-track the ball to show laydown,
    breakpoint, entry angle, pocket and a top-down path, plus speed (and best-effort revs).
 
 You never simulate the human — you enter your real rolls/observations or film a real shot.
-Naming: **Lane Read** = the *subjective* read (what you thought); **Trace** = the *objective*
+Naming: **Journal** = the *subjective* read (what you thought); **Trace** = the *objective*
 measurement (what actually happened) — the automated version of LaneRead's video-comparison step.
+
+**VirtualLanes is THE app going forward.** LaneRead (laneread.com) was an initial proof of
+concept; its journaling lives on as the Journal mode here. The standalone LaneRead app/site is to
+be **deprecated and retired ~mid-2027** (about a year from 2026-06). laneread.com can funnel to
+VirtualLanes until then.
 
 ## Mode 3 — Trace (camera ball tracking)
 
@@ -34,7 +39,7 @@ measurement (what actually happened) — the automated version of LaneRead's vid
   reach phone slow-mo (120/240fps) and caps ~30fps, so live point-and-overlay is deferred —
   that's the only part that really wants native (Capacitor camera bridge later).
 - **Stays in the one PWA** (not standalone): shares the `Game` history; a Trace can sit beside the
-  shot you journaled in Lane Read.
+  shot you journaled in Journal.
 
 ## Platform & architecture
 
@@ -48,7 +53,7 @@ measurement (what actually happened) — the automated version of LaneRead's vid
 - **Backend/accounts deferred** to the future cloud-analytics / AI phase (what LaneRead's roadmap
   already teases). Only then does splitting into truly separate apps become viable.
 - **Recommended stack:** SvelteKit + TypeScript (least boilerplate, great PWA story); Vite+React
-  is the fallback if more examples/AI-help matter. Tabbed shell: `[Bowl-off] [Lane Read] [History] [Settings]`.
+  is the fallback if more examples/AI-help matter. Tabbed shell: `[Bowl-off] [Journal] [Trace] [History] [Settings]`.
 
 ## Unified data model
 
@@ -123,7 +128,8 @@ left/knocked**, not just a count — enabling spare conversion, leave frequency,
 
 - `prototype/bowl-off.html` — throwaway phone prototype; engine validated in Node. Fold the
   winning layout + the validated engine into the real PWA, then delete.
-- **LaneRead** (separate repo `~/Projects/lane-read`, deployed laneread.com) — mature vanilla
-  single-file tracker. Becomes the **Study mode**; port into the PWA. laneread.com can stay as a
-  marketing front door. Don't merge the two prototype codebases prematurely — converge on the
-  shared `Game` model, then build both into the real PWA.
+- **LaneRead** (separate repo `~/Projects/lane-read`, deployed laneread.com) — the original
+  proof-of-concept; a mature vanilla single-file tracker. Its functionality is being rebuilt as the
+  **Journal mode** inside VirtualLanes. The standalone app/site is **deprecated, to retire ~mid-2027**;
+  laneread.com can funnel to VirtualLanes until then. Rebuild Journal on the shared `Game` model
+  (don't merge the PoC codebase directly).

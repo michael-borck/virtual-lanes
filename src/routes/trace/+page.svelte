@@ -11,7 +11,7 @@
 			<li><strong>Ball speed</strong> from frame timing. <strong>Revs</strong> estimated (hard on a solid-colour ball).</li>
 			<li>The real value is <strong>relative</strong>: compare a shot to your own averages — "breakpoint 3 boards tighter than usual."</li>
 		</ul>
-		<p style="margin:8px 0 0">Trace shots will save to the same history as Bowl-off and Lane Read, so a tracked path can sit alongside the shot you journaled.</p>
+		<p style="margin:8px 0 0">Trace shots will save to the same history as Bowl-off and Journal, so a tracked path can sit alongside the shot you journaled.</p>
 	</div>
 </div>
 

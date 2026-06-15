@@ -33,7 +33,7 @@
 		{#each games as g (g.id)}
 			<div class="gcard">
 				<div class="top">
-					<span class="mode">{g.mode === 'bowloff' ? '🎳 Bowl-off' : '📖 Lane Read'}</span>
+					<span class="mode">{g.mode === 'bowloff' ? '🎳 Bowl-off' : '📖 Journal'}</span>
 					<span class="date">{fmt(g.date)}</span>
 					<button class="del" aria-label="Delete game" onclick={() => history.remove(g.id)}>✕</button>
 				</div>

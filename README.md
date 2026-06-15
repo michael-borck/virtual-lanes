@@ -1,9 +1,10 @@
 # VirtualLanes
 
-A phone-first bowling companion (PWA). Two modes over one shared history:
+A phone-first bowling companion (PWA). Three modes over one shared history:
 
 - **Bowl-off** — bowl your real frames and compete against a chosen, simulated rival, frame by frame.
-- **Lane Read** — journal your real shots (what you saw → decided → happened) to sharpen lane reading.
+- **Journal** — record your real shots (what you saw → decided → happened) to sharpen your lane read.
+- **Trace** *(coming soon)* — film a shot; auto-track the ball for laydown, breakpoint, pocket and speed.
 
 See **[docs/product-direction.md](docs/product-direction.md)** for the full vision, architecture, and the
 simulation model (rev rate + ball speed are the causal levers; conditions, oil breakdown, ball changes).
@@ -26,7 +27,7 @@ pnpm check          # type-check
 ## Layout
 
 - `src/lib/engine/` — the simulation + scoring engine (typed; ported from the original Python lib)
-- `src/routes/` — `+page` launch mode-picker, and `bowloff` / `lane-read` / `history` / `settings` tabs
+- `src/routes/` — `+page` launch mode-picker, and `bowloff` / `journal` / `trace` / `history` / `settings` tabs
 - `prototype/` — throwaway HTML prototypes that validated the bowl-off UX and engine
 - `reference/` — the original Python `virtual_lanes` library + tests, kept as the canonical scoring reference
 

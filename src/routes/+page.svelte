@@ -10,9 +10,9 @@
 		<div class="d">Bowl your real frames and compete against a chosen rival, frame by frame.</div>
 	</a>
 
-	<a class="tile study" href="/lane-read">
-		<div class="t">Lane Read</div>
-		<div class="d">Journal your real shots — what you saw, decided, and what happened.</div>
+	<a class="tile study" href="/journal">
+		<div class="t">Journal</div>
+		<div class="d">Record your real shots — what you saw, decided, and what happened.</div>
 	</a>
 
 	<a class="tile trace" href="/trace">

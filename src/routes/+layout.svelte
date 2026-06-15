@@ -7,7 +7,7 @@
 
 	const TABS = [
 		{ href: '/bowloff', ic: '🎳', label: 'Bowl-off' },
-		{ href: '/lane-read', ic: '📖', label: 'Lane Read' },
+		{ href: '/journal', ic: '📖', label: 'Journal' },
 		{ href: '/trace', ic: '🎥', label: 'Trace' },
 		{ href: '/history', ic: '📊', label: 'History' },
 		{ href: '/settings', ic: '⚙️', label: 'Settings' }
