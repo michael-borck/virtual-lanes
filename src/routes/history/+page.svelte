@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { history } from '$lib/history.svelte';
+	import StatsView from '$lib/StatsView.svelte';
 
 	history.load();
 	let games = $derived(history.games);
-	let bowloffs = $derived(games.filter((g) => g.mode === 'bowloff'));
-	let avg = $derived(bowloffs.length ? Math.round(bowloffs.reduce((s, g) => s + (g.score ?? 0), 0) / bowloffs.length) : 0);
-	let best = $derived(bowloffs.length ? Math.max(...bowloffs.map((g) => g.score ?? 0)) : 0);
+	let view = $state<'games' | 'stats'>('games');
 	const readRate = (g: { shots?: { read: string }[] }) => {
 		const j = (g.shots ?? []).filter((s) => s.read);
 		return { matched: j.filter((s) => s.read === 'match').length, judged: j.length };
@@ -28,11 +27,14 @@
 		<p class="lede">Every game you record lands here.</p>
 		<div class="soon">No games yet — finish a bowl-off or a journal session and it’ll show up automatically.</div>
 	{:else}
-		<div class="summary">
-			<div class="stat"><div class="v">{bowloffs.length}</div><div class="k">games</div></div>
-			<div class="stat"><div class="v">{avg}</div><div class="k">avg</div></div>
-			<div class="stat"><div class="v">{best}</div><div class="k">best</div></div>
+		<div class="seg" style="margin-bottom:12px">
+			<button class:on={view === 'games'} onclick={() => (view = 'games')}>Games</button>
+			<button class:on={view === 'stats'} onclick={() => (view = 'stats')}>Stats</button>
 		</div>
+
+		{#if view === 'stats'}
+			<StatsView {games} />
+		{:else}
 
 		{#each games as g (g.id)}
 			<div class="gcard">
@@ -64,32 +66,11 @@
 				{/if}
 			</div>
 		{/each}
+		{/if}
 	{/if}
 </div>
 
 <style>
-	.summary {
-		display: flex;
-		gap: 10px;
-		margin: 6px 0 14px;
-	}
-	.stat {
-		flex: 1;
-		background: var(--panel);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		padding: 12px;
-		text-align: center;
-	}
-	.stat .v {
-		font-size: 24px;
-		font-weight: 800;
-		color: var(--accent);
-	}
-	.stat .k {
-		font-size: 11px;
-		color: var(--dim);
-	}
 	.gcard {
 		background: var(--panel);
 		border: 1px solid var(--line);
