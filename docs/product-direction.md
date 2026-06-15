@@ -7,12 +7,24 @@
 ## Build status (2026-06)
 
 The SvelteKit + adapter-static PWA is **live on Cloudflare Pages** (`virtual-lanes.pages.dev`,
-auto-deploys on push to `main`). Done: **Bowl-off** (layout B, positional pin deck, leave/spare/
-split stats), **History** (shared `GameRecord`, localStorage), **Journal v1** (log shots:
-saw→decided→happened, adjustments, read V/X, emotion; saves to history), **PWA** (manifest, icons,
-offline service worker). Placeholders: **Trace** (camera — coming soon) and **Settings**.
-Backlog: create-your-own bowler/ball (exists in `prototype/`, not yet in the real Bowl-off),
-custom domain (`virtuallanes.app` purchased, not yet attached).
+auto-deploys on push to `main`). **Done:** Bowl-off (layout B, positional pin deck, leave/spare/
+split stats; **rivals optional → solo game tracking**), History (shared `GameRecord`, localStorage),
+**Journal v1**, **Rivals manager** (create/edit/delete custom + hide/unhide built-ins),
+**Settings** (profile + data export/import), **Stats** (History → Games/Stats: average/trend,
+strike%, first-ball avg, spare/makable/split %, most-left pins, by pattern/volume/length),
+**PWA** (manifest, icons, offline SW). **Placeholder:** Trace (camera — coming soon).
+
+### Next / backlog
+- **Phase 2 — unified shadow session:** one always-present session; Bowl-off + Journal are lenses
+  on the same frames. Per-frame journal is **sparse/optional** (only the important frames, not all).
+  Finishing saves ONE combined history entry (the layers you used; unused layers stay empty).
+  Rivals already decoupled (Phase 1 done). Capture the human's **ball** per game → enables a
+  by-ball stats breakdown.
+- **Future — ML on journal data:** the journal is a labelled dataset (read/decision → actual
+  outcome/leave). Once enough is logged: k-NN ("situations like this, X worked"), decision-tree
+  adjustment suggestions, misread-pattern matching. Requirement: keep capturing **structured**
+  journal fields **linked to frame outcomes** — which Phase 2's per-frame model provides for free.
+- Trace (camera ball-tracking); attach `virtuallanes.app`; create-your-own ball in Bowl-off.
 
 ## Vision
 
