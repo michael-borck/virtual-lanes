@@ -52,8 +52,22 @@ export interface Bowler {
 
 export type PatternType = 'house' | 'sport';
 
+/** A bowling centre. Physics-neutral — descriptive context (and ML signal). */
+export interface Centre {
+	id: string;
+	name: string;
+	location?: string;
+	lanes?: number;
+	pinsetter: 'freefall' | 'string';
+	approach: 'short' | 'standard' | 'long';
+	approachFeel: 'sticky' | 'normal' | 'slippery';
+	ballReturn: 'close' | 'standard' | 'far';
+	note?: string;
+}
+
 export interface LaneCondition {
 	alley: string;
+	centreId?: string;
 	length: 'short' | 'medium' | 'long';
 	volume: 'light' | 'medium' | 'heavy';
 	surface: 'synthetic' | 'wood';
@@ -124,6 +138,7 @@ export interface GameRecord {
 	usedHandicap?: boolean;
 	ball?: string; // primary ball used (bowl-off) or free-text (journal)
 	ballChanges?: { frame: number; name: string; cover: string }[]; // bowl-off ball-downs
+	centre?: { name: string; pinsetter: string; approach: string; approachFeel: string; ballReturn: string }; // snapshot for stats/ML
 	// journal only
 	pattern?: string;
 	shots?: JournalShot[];

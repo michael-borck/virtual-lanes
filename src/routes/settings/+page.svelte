@@ -2,6 +2,14 @@
 	import { g } from '$lib/bowloff/state.svelte';
 	import { history } from '$lib/history.svelte';
 	import { STYLE_PRESETS } from '$lib/engine/personas';
+	import { centres } from '$lib/centres.svelte';
+
+	function pickCentre(id: string) {
+		const c = centres.available.find((x) => x.id === id);
+		g.cond.centreId = id;
+		if (c) g.cond.alley = c.name;
+		g.saveSetup();
+	}
 
 	history.load();
 	const styleOpts = Object.entries(STYLE_PRESETS).map(([k, v]) => ({ k, label: v.label }));
@@ -83,7 +91,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="field"><label for="alley">Default home alley</label><input id="alley" bind:value={g.cond.alley} oninput={() => g.saveSetup()} /></div>
+	<div class="field"><label for="dcentre">Default centre</label>
+		<select id="dcentre" value={g.cond.centreId} onchange={(e) => pickCentre(e.currentTarget.value)}>
+			{#each centres.available as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
+		</select>
+	</div>
 
 	<div class="sec">Data</div>
 	<p class="lede" style="margin-bottom:10px">{history.games.length} game{history.games.length === 1 ? '' : 's'} saved on this device (local only — no account).</p>
@@ -97,10 +109,11 @@
 	{#if importMsg}<div class="msg">{importMsg}</div>{/if}
 	<button class="cta danger" onclick={() => confirm('Delete ALL saved games on this device? This cannot be undone.') && history.clear()} disabled={!history.games.length}>Clear all data</button>
 
-	<div class="sec">Equipment &amp; rivals</div>
+	<div class="sec">Equipment, rivals &amp; centres</div>
 	<div class="btns">
-		<a class="cta sub" href="/arsenal" style="text-decoration:none">🎳 My arsenal →</a>
-		<a class="cta sub" href="/rivals" style="text-decoration:none">👤 Rivals →</a>
+		<a class="cta sub" href="/arsenal" style="text-decoration:none">🎳 Arsenal</a>
+		<a class="cta sub" href="/rivals" style="text-decoration:none">👤 Rivals</a>
+		<a class="cta sub" href="/centres" style="text-decoration:none">🏟 Centres</a>
 	</div>
 
 	<div class="sec">About</div>

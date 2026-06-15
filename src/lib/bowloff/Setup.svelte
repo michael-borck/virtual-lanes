@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { g } from './state.svelte';
 	import { STYLE_PRESETS, TIERS, styleShort } from '$lib/engine/personas';
+	import { centres } from '$lib/centres.svelte';
 	import { clamp } from '$lib/engine/bowling';
 	import type { Attr } from '$lib/engine/types';
+
+	function pickCentre(id: string) {
+		const c = centres.available.find((x) => x.id === id);
+		g.cond.centreId = id;
+		if (c) g.cond.alley = c.name;
+	}
 
 	const styleOpts = Object.entries(STYLE_PRESETS).map(([k, v]) => ({ k, label: v.label }));
 	function bars(a: Attr) {
@@ -30,7 +37,12 @@
 	<details class="acc">
 		<summary><div class="h">Lane &amp; conditions</div><div class="sum">{laneSummary}</div></summary>
 		<div class="body">
-			<div class="field"><label for="alley">Home alley</label><input id="alley" bind:value={g.cond.alley} /></div>
+			<div class="field"><label for="centre">Centre</label>
+				<select id="centre" value={g.cond.centreId} onchange={(e) => pickCentre(e.currentTarget.value)}>
+					{#each centres.available as c (c.id)}<option value={c.id}>{c.name}</option>{/each}
+				</select>
+			</div>
+			<a class="ghost" href="/centres" style="display:block;text-align:center;margin-bottom:10px">🏟 Manage centres</a>
 			<div class="field">
 				<span class="fl">Pattern length</span>
 				<div class="seg">

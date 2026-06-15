@@ -16,6 +16,7 @@ import {
 import { STYLE_PRESETS, TIERS } from '$lib/engine/personas';
 import { roster as rosterStore } from '$lib/roster.svelte';
 import { arsenal } from '$lib/arsenal.svelte';
+import { centres } from '$lib/centres.svelte';
 import { history, History } from '$lib/history.svelte';
 import type { Ball, Bowler, Frame, GameRecord, JournalShot, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
 
@@ -63,6 +64,7 @@ class BowlOff {
 	screen = $state<Screen>('setup');
 	cond = $state<LaneCondition>({
 		alley: 'Sunset Lanes',
+		centreId: 'ctr-sunset',
 		length: 'medium',
 		volume: 'medium',
 		surface: 'synthetic',
@@ -274,6 +276,10 @@ class BowlOff {
 			usedHandicap: this.useHcp,
 			ball: this.ballChanges[0]?.name,
 			ballChanges: this.ballChanges.length > 1 ? this.ballChanges.map((c) => ({ frame: c.frame, name: c.name, cover: c.cover })) : undefined,
+			centre: (() => {
+				const c = centres.byId(this.cond.centreId);
+				return c ? { name: c.name, pinsetter: c.pinsetter, approach: c.approach, approachFeel: c.approachFeel, ballReturn: c.ballReturn } : undefined;
+			})(),
 			shots: this.noteCount ? Object.values(this.notes).map((s) => ({ ...s, adjustments: [...s.adjustments] })) : undefined
 		};
 		history.add(rec);
