@@ -88,6 +88,7 @@
 	<details class="acc">
 		<summary><div class="h">Rivals ({g.selectedIds.length})</div><div class="sum">{rivalSummary}</div></summary>
 		<div class="body">
+			<a class="ghost" href="/rivals" style="display:block;text-align:center;margin-bottom:10px">✏️ Create / manage rivals</a>
 			<div class="roster">
 				{#each g.roster as p (p.id)}
 					<button class="pcard" class:sel={g.selectedIds.includes(p.id)} onclick={() => g.toggleRival(p.id)}>

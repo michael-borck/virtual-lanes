@@ -1,7 +1,7 @@
 // VirtualLanes simulation + scoring engine (typed port of the validated prototype).
 // Causal model: rev rate + ball speed + accuracy + consistency drive everything.
 
-import type { Attr, Ball, Bowler, Cover, Frame, Lane, LaneCondition, SimParams } from './types';
+import type { Attr, Ball, Bowler, Cover, Frame, Lane, LaneCondition, SimParams, TierKey } from './types';
 import { TIERS } from './personas';
 
 export const clamp = (x: number, a: number, b: number) => Math.max(a, Math.min(b, x));
@@ -128,6 +128,16 @@ export function simBowlerGame(b: Bowler, lane: Lane, startBall: Ball): SimResult
 		frames.push(i < 9 ? simReg(e) : simTen(e));
 	}
 	return { frames, switchFrame: switched };
+}
+
+/** Quick projected house average for a set of attributes (for the rival-creator preview). */
+export function projectAverage(attr: Attr, tier: TierKey, n = 120): number {
+	const lane: Lane = { initialFriction: 0.46, rate: 0, sport: false, allowBallChange: false };
+	const ball = recommendBall(clamp((attr.rev - 150) / 400, 0, 1), 0.46);
+	const b: Bowler = { id: 'preview', name: 'preview', styleKey: 'custom', tier, division: 'open', handicap: 0, attr };
+	let sum = 0;
+	for (let k = 0; k < n; k++) sum += lastTotal(simBowlerGame(b, lane, ball).frames);
+	return Math.round(sum / n);
 }
 
 /* ---------- traditional scoring ---------- */

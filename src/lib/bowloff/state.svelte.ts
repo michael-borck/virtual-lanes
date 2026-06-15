@@ -13,7 +13,8 @@ import {
 	simBowlerGame,
 	type HandicapCfg
 } from '$lib/engine/bowling';
-import { ROSTER, STYLE_PRESETS, TIERS } from '$lib/engine/personas';
+import { STYLE_PRESETS, TIERS } from '$lib/engine/personas';
+import { roster as rosterStore } from '$lib/roster.svelte';
 import { history, History } from '$lib/history.svelte';
 import type { Ball, Bowler, Frame, GameRecord, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
 
@@ -76,7 +77,10 @@ class BowlOff {
 	deckKnocked = $state<number[]>([]);
 	#pendingLeave: { frame: number; standing: number[] } | null = null;
 
-	roster = ROSTER;
+	/** Selectable rivals = visible built-ins + custom (from the roster store). */
+	get roster() {
+		return rosterStore.available;
+	}
 
 	constructor() {
 		this.#loadSetup();

@@ -79,6 +79,9 @@
 	{#if importMsg}<div class="msg">{importMsg}</div>{/if}
 	<button class="cta danger" onclick={() => confirm('Delete ALL saved games on this device? This cannot be undone.') && history.clear()} disabled={!history.games.length}>Clear all data</button>
 
+	<div class="sec">Rivals</div>
+	<a class="cta sub" href="/rivals" style="text-decoration:none">Create &amp; manage rivals →</a>
+
 	<div class="sec">About</div>
 	<div class="soon">VirtualLanes v0.1 · offline-first PWA. Your data lives only on this device — use Export to back it up or move it to another phone.</div>
 </div>
