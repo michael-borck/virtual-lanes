@@ -1,7 +1,9 @@
-from typing import List, Tuple, Dict, Iterator, Optional
+from collections.abc import Iterator
+
 import numpy as np
-from .bowler import Bowler
-from .alley import Alley
+
+from virtual_lanes.alley import Alley
+from virtual_lanes.bowler import Bowler
 
 
 class Game:
@@ -15,20 +17,23 @@ class Game:
         alley (Alley): The `Alley` object specifying the lane type and oil pattern where the game is played.
         random_seed (Optional[int]): Seed for the random number generator to ensure reproducibility, if provided.
     """
-    def __init__(self, bowlers: List[Bowler], alley: Alley, random_seed: Optional[int] = None):
+    def __init__(self, bowlers: list[Bowler], alley: Alley, random_seed: int | None = None) -> None:
         """
         Initialises a game with a list of bowlers and the alley where the game is played.
 
         Parameters:
-            bowlers (List[Bowler]): List of Bowler objects participating in the game.
+            bowlers (list[Bowler]): List of Bowler objects participating in the game.
             alley (Alley): The Alley object specifying the lane type and oil pattern.
             random_seed (int, optional): Random seed for reproducibility of the simulation.
         """
         self.bowlers = bowlers
         self.alley = alley
         self.random_seed = random_seed
+        # A dedicated generator keeps simulations reproducible and isolated from
+        # the global NumPy RNG (which is shared process-wide and not thread-safe).
+        self.rng = np.random.default_rng(random_seed)
 
-    def simulate_frame(self, bowler: Bowler, frame_number: int) -> Tuple[int, ...]:
+    def simulate_frame(self, bowler: Bowler, frame_number: int) -> tuple[int, ...]:
         """
         Simulates a single frame for a given bowler based on the frame number.
 
@@ -44,24 +49,30 @@ class Game:
         else:
             return self.simulate_last_frame(bowler)
 
-    def simulate_regular_frame(self, bowler: Bowler) -> Tuple[int, int]:
+    def simulate_regular_frame(self, bowler: Bowler) -> tuple[int, int]:
         """
-        Simulates a regular frame (not the last one), accounting for strikes and open frames.
+        Simulates a regular frame (not the last one), accounting for strikes, spares and open frames.
+
+        The first ball is a strike with probability ``bowler.strike_prob``. Otherwise, if pins
+        remain the bowler converts the spare with probability ``bowler.spare_prob``; failing that
+        the second ball leaves an open frame.
 
         Parameters:
             bowler (Bowler): The Bowler object for whom the frame is simulated.
 
         Returns:
-            Tuple[int, int]: A tuple of two integers representing the pins knocked down in each roll.
+            tuple[int, int]: A tuple of two integers representing the pins knocked down in each roll.
         """
-        strike = np.random.rand() < bowler.strike_prob
-        if strike:
+        if self.rng.random() < bowler.strike_prob:
             return (10, 0)
-        first_roll = np.random.randint(0, 11)
-        second_roll = np.random.randint(0, 11 - first_roll)
+        first_roll = int(self.rng.integers(0, 10))  # 0-9; a 10 would be a strike
+        remaining = 10 - first_roll
+        # Convert the spare with probability spare_prob, otherwise leave an open frame.
+        converts_spare = self.rng.random() < bowler.spare_prob
+        second_roll = remaining if converts_spare else int(self.rng.integers(0, remaining))
         return (first_roll, second_roll)
 
-    def simulate_last_frame(self, bowler: Bowler) -> Tuple[int, ...]:
+    def simulate_last_frame(self, bowler: Bowler) -> tuple[int, ...]:
         """
         Simulates the 10th frame, which may include up to three rolls depending on the bowler's performance.
 
@@ -69,41 +80,44 @@ class Game:
             bowler (Bowler): The Bowler object for whom the last frame is simulated.
 
         Returns:
-            Tuple[int, int, int]: A tuple of up to three integers representing the pins knocked down in each roll.
+            tuple[int, ...]: A tuple of up to three integers representing the pins knocked down in each roll.
         """
-        rolls = []
+        rolls: list[int] = []
 
-        # Simulate the first roll
-        if np.random.rand() < bowler.strike_prob:
+        # First roll
+        if self.rng.random() < bowler.strike_prob:
             rolls.append(10)
         else:
-            rolls.append(np.random.randint(0, 11))
+            rolls.append(int(self.rng.integers(0, 10)))
 
-        # Simulate the second roll
-        if rolls[0] == 10:  # First roll was a strike
-            if np.random.rand() < bowler.strike_prob:
+        # Second roll
+        if rolls[0] == 10:  # First roll was a strike: fresh rack
+            if self.rng.random() < bowler.strike_prob:
                 rolls.append(10)
             else:
-                rolls.append(np.random.randint(0, 11))
-        else:
-            second_roll = np.random.randint(0, 11 - rolls[0])
-            rolls.append(second_roll)
+                rolls.append(int(self.rng.integers(0, 11)))
+        else:  # Pins remain: attempt the spare
+            remaining = 10 - rolls[0]
+            if self.rng.random() < bowler.spare_prob:
+                rolls.append(remaining)
+            else:
+                rolls.append(int(self.rng.integers(0, remaining)))
 
-        # Simulate the third roll if needed
-        if sum(rolls[:2]) >= 10:  # Strike or spare in first two rolls
-            if np.random.rand() < bowler.strike_prob:
+        # Third roll only earned by a strike or spare in the first two rolls (fresh rack)
+        if sum(rolls[:2]) >= 10:
+            if self.rng.random() < bowler.strike_prob:
                 rolls.append(10)
             else:
-                rolls.append(np.random.randint(0, 11))
+                rolls.append(int(self.rng.integers(0, 11)))
 
         return tuple(rolls[:3])  # Ensure only up to three rolls are returned
 
-    def frame_by_frame_generator(self) -> Iterator[Dict[str, Tuple[int, ...]]]:
+    def frame_by_frame_generator(self) -> Iterator[dict[str, tuple[int, ...]]]:
         """
         A generator to simulate the game frame-by-frame, yielding results for each frame for all bowlers.
 
         Yields:
-            Iterator[Dict[str, Tuple[int, ...]]]: An iterator that yields a dictionary representing the frame results of each bowler.
+            Iterator[dict[str, tuple[int, ...]]]: An iterator that yields a dictionary representing the frame results of each bowler.
         """
         for frame_number in range(10):
             frame_results = {}
@@ -111,16 +125,14 @@ class Game:
                 frame_results[bowler.name] = self.simulate_frame(bowler, frame_number)
             yield frame_results
 
-    def simulate_game(self) -> Dict[str, List[Tuple[int, ...]]]:
+    def simulate_game(self) -> dict[str, list[tuple[int, ...]]]:
         """
         Simulates a complete game for all bowlers, returning the frame-by-frame results.
 
         Returns:
-            Dict[str, List[Tuple[int, ...]]]:: A dictionary where keys are bowler names and values are lists of tuples, each tuple representing a frame.
+            dict[str, list[tuple[int, ...]]]: A dictionary where keys are bowler names and values are lists of tuples, each tuple representing a frame.
         """
-        if self.random_seed is not None:
-            np.random.seed(self.random_seed)
-        results: Dict[str, List[Tuple[int, ...]]] = {bowler.name: [] for bowler in self.bowlers}
+        results: dict[str, list[tuple[int, ...]]] = {bowler.name: [] for bowler in self.bowlers}
         for frame_results in self.frame_by_frame_generator():
             for name, frame in frame_results.items():
                 results[name].append(frame)

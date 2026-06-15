@@ -1,13 +1,11 @@
 """VirtualLanes CLI commands."""
 
 import typer
-from typing import Optional, List
-import virtual_lanes
-from virtual_lanes.tui import app as tui_app
-from virtual_lanes.web import app as web_app
-import rich
 from rich.console import Console
 from rich.table import Table
+
+from virtual_lanes.tui import app as tui_app
+from virtual_lanes.web import app as web_app
 
 console = Console()
 app = typer.Typer(help="VirtualLanes bowling management and simulation.")
@@ -28,7 +26,7 @@ app.add_typer(tui_app_cmd, name="tui")
 @app.callback()
 def callback():
     """
-    TrueRoll - A ten-pin bowling simulation and management tool.
+    VirtualLanes - A ten-pin bowling simulation and management tool.
     """
     pass
 
@@ -120,8 +118,8 @@ def list_leagues():
     table.add_column("Name")
     table.add_column("Members")
     
-    for l in leagues:
-        table.add_row(l["name"], str(l["members"]))
+    for lg in leagues:
+        table.add_row(lg["name"], str(lg["members"]))
     
     console.print(table)
 

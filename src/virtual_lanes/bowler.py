@@ -11,7 +11,8 @@ class Bowler:
         technique (str): The bowling technique used, either 'single' or 'double' handed.
     """
 
-    def __init__(self, name: str, strike_prob: float, spare_prob: float, handedness: str = 'right', technique: str = 'single'):
+    def __init__(self, name: str, strike_prob: float, spare_prob: float,
+                 handedness: str = 'right', technique: str = 'single') -> None:
         """
         Initializes a new instance of Bowler.
 
@@ -40,7 +41,7 @@ class Bowler:
         self.handedness = handedness
         self.technique = technique
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Returns a string representation of the Bowler instance.
 

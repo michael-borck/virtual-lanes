@@ -10,7 +10,7 @@ class Alley:
 
     VALID_LANE_TYPES = {'wood', 'synthetic'}
 
-    def __init__(self, name: str, location: str, lane_type: str):
+    def __init__(self, name: str, location: str, lane_type: str) -> None:
         """
         Initialize a new Alley instance.
 
@@ -28,7 +28,7 @@ class Alley:
             raise ValueError(f"Invalid lane type '{lane_type}'. Valid types are: 'Wood', 'Synthetic'")
         self.lane_type = lane_type.capitalize()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Return a string representation of the Alley instance, which is helpful for debugging and logging.
 

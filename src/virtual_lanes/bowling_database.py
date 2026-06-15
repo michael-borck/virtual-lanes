@@ -1,7 +1,8 @@
 import sqlite3
-from typing import List, Tuple
-from .bowler import Bowler
-from .alley import Alley
+
+from virtual_lanes.alley import Alley
+from virtual_lanes.bowler import Bowler
+from virtual_lanes.scoring import Scoring
 
 
 class BowlingDatabase:
@@ -10,7 +11,7 @@ class BowlingDatabase:
     Provides methods to add and manage bowlers, alleys, games, and detailed game statistics.
     """
 
-    def __init__(self, db_name: str = 'bowling.db'):
+    def __init__(self, db_name: str = 'bowling.db') -> None:
         """
         Initialises the database connection and creates tables if they do not already exist.
 
@@ -21,7 +22,7 @@ class BowlingDatabase:
         self.conn = sqlite3.connect(self.db_name)
         self.create_tables()
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         """
         Creates tables in the database if they do not exist to store bowlers, alleys, games, and game details.
         """
@@ -81,7 +82,7 @@ class BowlingDatabase:
         # Commit changes
         self.conn.commit()
 
-    def add_bowler(self, bowler: 'Bowler'):
+    def add_bowler(self, bowler: Bowler) -> int:
         """
         Adds a new bowler to the database or updates an existing bowler with the same name.
 
@@ -98,9 +99,10 @@ class BowlingDatabase:
             Handedness=excluded.Handedness, Style=excluded.Style
         ''', (bowler.name, bowler.handedness, bowler.technique))
         self.conn.commit()
+        assert c.lastrowid is not None
         return c.lastrowid
 
-    def add_alley(self, alley: 'Alley'):
+    def add_alley(self, alley: Alley) -> int:
         """
         Adds a new bowling alley to the database.
 
@@ -114,9 +116,11 @@ class BowlingDatabase:
         c.execute('INSERT INTO Alleys (Name, Location, LaneType) VALUES (?, ?, ?)',
                   (alley.name, alley.location, alley.lane_type))
         self.conn.commit()
+        assert c.lastrowid is not None
         return c.lastrowid
 
-    def add_game(self, date: str, alley_id: int, oil_pattern_id: int, frames: List[Tuple[int, ...]]):
+    def add_game(self, date: str, alley_id: int, oil_pattern_id: int,
+                 bowler_id: int, frames: list[tuple[int, ...]]) -> int:
         """
         Adds a new game along with detailed frame data to the database.
 
@@ -124,29 +128,36 @@ class BowlingDatabase:
             date (str): The date the game was played.
             alley_id (int): The database ID of the alley where the game was played.
             oil_pattern_id (int): The database ID of the oil pattern used in the game.
-            frames (List[Tuple[int, ...]]): A list of tuples representing the frames played in the game.
+            bowler_id (int): The database ID of the bowler who played the game.
+            frames (list[tuple[int, ...]]): A list of tuples representing the frames played in the game.
+
+        Returns:
+            int: The database ID of the newly created game.
         """
         c = self.conn.cursor()
         c.execute('INSERT INTO Games (Date, AlleyID, OilPatternID) VALUES (?, ?, ?)', (date, alley_id, oil_pattern_id))
         game_id = c.lastrowid
+        assert game_id is not None
         total_score, strike_percentage, spare_percentage = self.calculate_stats(frames)
         c.execute('''
-            INSERT INTO GameDetails (GameID, FrameData, TotalScore, StrikePercentage, SparePercentage)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (game_id, str(frames), total_score, strike_percentage, spare_percentage))
+            INSERT INTO GameDetails (GameID, BowlerID, FrameData, TotalScore, StrikePercentage, SparePercentage)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (game_id, bowler_id, str(frames), total_score, strike_percentage, spare_percentage))
         self.conn.commit()
+        return game_id
 
-    def calculate_stats(self, frames: List[Tuple[int, ...]]) -> Tuple[int, float, float]:
+    def calculate_stats(self, frames: list[tuple[int, ...]]) -> tuple[int, float, float]:
         """
         Calculate total score, strike, and spare percentages from frame data.
 
         Args:
-            frames (List[Tuple[int, ...]]): A list of tuples representing the frames played in the game.
+            frames (list[tuple[int, ...]]): A list of tuples representing the frames played in the game.
 
         Returns:
-            Tuple[int, float, float]: A tuple containing the total score, strike percentage, and spare percentage.
+            tuple[int, float, float]: A tuple containing the total score (traditional rules),
+            strike percentage, and spare percentage.
         """
-        total_score = 0  # Implement scoring calculation based on rules
+        total_score = Scoring.traditional(frames)
         strikes = sum(1 for frame in frames if frame[0] == 10)
         spares = sum(1 for frame in frames if sum(frame[:2]) == 10 and frame[0] != 10)
         total_frames = len(frames)
@@ -154,7 +165,7 @@ class BowlingDatabase:
         spare_percentage = (spares / total_frames) * 100
         return total_score, strike_percentage, spare_percentage
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the database connection.
         """

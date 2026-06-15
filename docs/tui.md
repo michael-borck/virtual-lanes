@@ -1,6 +1,6 @@
 # Terminal User Interface
 
-TrueRoll provides a rich Terminal User Interface (TUI) built with the Textual library, offering an interactive, dashboard-like experience directly in your terminal.
+VirtualLanes provides a rich Terminal User Interface (TUI) built with the Textual library, offering an interactive, dashboard-like experience directly in your terminal.
 
 ## Starting the TUI
 
@@ -9,20 +9,20 @@ You can start the TUI in several ways:
 ### Via Command Line
 
 ```bash
-true-roll tui start
+virtual-lanes tui start
 ```
 
 ### Via Python API
 
 ```python
-import true_roll
-true_roll.run_tui()
+import virtual_lanes
+virtual_lanes.run_tui()
 ```
 
 ### Direct Module Execution
 
 ```bash
-python -m true_roll.tui.app
+python -m virtual_lanes.tui.app
 ```
 
 ## Interface Overview
@@ -33,7 +33,7 @@ The TUI provides a dashboard-style interface with three main panels:
 2. **Games** - Tracks and displays game records
 3. **Leagues** - Shows league information
 
-![TrueRoll TUI Interface](images/tui_interface.png)
+![VirtualLanes TUI Interface](images/tui_interface.png)
 
 ## Navigation
 
@@ -99,7 +99,7 @@ The Leagues panel displays:
 
 ## Customization
 
-The TUI interface is styled using Textual CSS. You can modify the look and feel by editing the CSS string in the `TrueRollApp` class in `trueroll.tui.app`.
+The TUI interface is styled using Textual CSS. You can modify the look and feel by editing the CSS string in the `VirtualLanesApp` class in `virtual_lanes.tui.app`.
 
 ## Error Handling
 

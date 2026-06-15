@@ -1,5 +1,6 @@
 import pytest
-from virtual_lanes import Bowler, Alley, Game
+
+from virtual_lanes import Alley, Bowler, Game
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ def test_frame_by_frame_generator(setup_bowlers_and_alley):
     assert len(frames) == 10  # There should be exactly 10 frames
     for frame in frames:
         assert isinstance(frame, dict)
-        for name, result in frame.items():
+        for result in frame.values():
             assert isinstance(result, tuple)
 
 
@@ -46,7 +47,7 @@ def test_simulate_game(setup_bowlers_and_alley):
     game = Game(bowlers, alley, random_seed=42)
     game_results = game.simulate_game()
     assert isinstance(game_results, dict)
-    for name, frames in game_results.items():
+    for frames in game_results.values():
         assert len(frames) == 10  # Each bowler should have exactly 10 frames
         for frame in frames:
             assert isinstance(frame, tuple)

@@ -46,20 +46,19 @@ uv pip install -e .
 ### As a Python Library
 
 ```python
-from virtual_lanes import Bowler, Game, Scoring
+from virtual_lanes import Alley, Bowler, Game, Scoring
 
-# Create a bowler
-player = Bowler("John Doe", 180)
+# Create one or more bowlers with strike/spare probabilities (0.0 - 1.0)
+player = Bowler("John Doe", strike_prob=0.3, spare_prob=0.5)
 
-# Create a game
-game = Game(player)
-game.roll(10)  # Strike
-game.roll(5)   # 5 pins
-game.roll(5)   # Spare
+# Create an alley and simulate a game (random_seed makes it reproducible)
+alley = Alley("Strike Zone", "Downtown", "Synthetic")
+game = Game([player], alley, random_seed=42)
+results = game.simulate_game()  # {"John Doe": [(roll1, roll2), ...]}
 
-# Get the score
-score = Scoring.calculate_score(game)
-print(f"{player.name}'s score: {score}")
+# Score the simulated frames
+frames = results["John Doe"]
+print(f"{player.name}'s score: {Scoring.traditional(frames)}")
 ```
 
 ### Command Line Interface (CLI)

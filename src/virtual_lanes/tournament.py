@@ -1,11 +1,10 @@
-from typing import List, Dict, Tuple
-from .game import Game
-from .bowler import Bowler
-from .alley import Alley
+from virtual_lanes.alley import Alley
+from virtual_lanes.bowler import Bowler
+from virtual_lanes.game import Game
 
 
 class Tournament:
-    def __init__(self, bowlers: List[Bowler], alley: Alley, num_games: int = 1):
+    def __init__(self, bowlers: list[Bowler], alley: Alley, num_games: int = 1) -> None:
         """
         Initialize a Tournament instance with bowlers, the alley where the tournament is played, and the number of games each bowler will play.
 
@@ -20,10 +19,9 @@ class Tournament:
         self.bowlers = bowlers
         self.alley = alley
         self.num_games = num_games
-        self.results: Dict[str, List[List[Tuple[int, ...]]]] = {bowler.name: [] for bowler in bowlers}
-        # self.results = {bowler.name: [] for bowler in bowlers}
+        self.results: dict[str, list[list[tuple[int, ...]]]] = {bowler.name: [] for bowler in bowlers}
 
-    def run_tournament(self):
+    def run_tournament(self) -> None:
         """
         Simulate the entire tournament, running the specified number of games for each bowler.
         """
@@ -33,7 +31,7 @@ class Tournament:
             for name, scores in game_results.items():
                 self.results[name].append(scores)
 
-    def get_results(self) -> Dict[str, List[int]]:
+    def get_results(self) -> dict[str, list[int]]:
         """
         Calculate and return the total scores for each bowler over the course of the tournament.
 
@@ -43,7 +41,7 @@ class Tournament:
         total_scores = {name: [sum(sum(frame) for frame in game) for game in games] for name, games in self.results.items()}
         return total_scores
 
-    def get_average_scores(self) -> Dict[str, float]:
+    def get_average_scores(self) -> dict[str, float]:
         """
         Calculate and return the average scores for each bowler in the tournament.
 

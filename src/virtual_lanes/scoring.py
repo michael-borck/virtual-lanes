@@ -1,6 +1,6 @@
 class Scoring:
     @staticmethod
-    def traditional(frames: list) -> int:
+    def traditional(frames: list[tuple[int, ...]]) -> int:
         """
         Calculate the traditional bowling score from a list of frames.
 
@@ -48,7 +48,7 @@ class Scoring:
         return score
 
     @staticmethod
-    def current_frame(frames: list) -> int:
+    def current_frame(frames: list[tuple[int, ...]]) -> int:
         """
         Calculate the score using current frame scoring rules, also known as World Bowling scoring.
 
@@ -69,7 +69,7 @@ class Scoring:
         return score
 
     @staticmethod
-    def nine_pin_no_tap(frames: list) -> int:
+    def nine_pin_no_tap(frames: list[tuple[int, ...]]) -> int:
         """
         Calculate the score for a 9-pin no-tap game, where knocking down 9 pins counts as a strike.
 

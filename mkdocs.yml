@@ -1,4 +1,4 @@
-site_name: TrueRoll Documentation
+site_name: VirtualLanes Documentation
 
 theme:
   name: readthedocs
@@ -40,5 +40,5 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          rendering:
+          options:
             show_source: true

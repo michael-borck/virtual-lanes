@@ -1,9 +1,8 @@
 """VirtualLanes Terminal User Interface using Textual."""
 
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static, Button, DataTable
-from textual.containers import Container
-import virtual_lanes
+from textual.widgets import Button, DataTable, Footer, Header, Static
+
 
 class BowlerList(Static):
     """A list of bowlers."""
@@ -59,10 +58,10 @@ class LeagueList(Static):
         yield table
         yield Button("Add League", id="add-league")
 
-class TrueRollApp(App):
-    """The main TrueRoll TUI application."""
-    
-    TITLE = "TrueRoll"
+class VirtualLanesApp(App):
+    """The main VirtualLanes TUI application."""
+
+    TITLE = "VirtualLanes"
     CSS = """
     .heading {
         background: $accent;
@@ -104,8 +103,8 @@ class TrueRollApp(App):
         yield Footer()
 
 def run_app():
-    """Run the TrueRoll TUI application."""
-    app = TrueRollApp()
+    """Run the VirtualLanes TUI application."""
+    app = VirtualLanesApp()
     app.run()
 
 if __name__ == "__main__":

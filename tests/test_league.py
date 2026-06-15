@@ -1,5 +1,6 @@
 import pytest
-from virtual_lanes import Bowler, Alley, League
+
+from virtual_lanes import Alley, Bowler, League
 
 
 def test_league_initialisation():

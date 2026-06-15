@@ -1,21 +1,21 @@
 # Command Line Interface
 
-TrueRoll provides a comprehensive command-line interface (CLI) built with Typer, offering rich command-line functionality with subcommands, options, and help documentation.
+VirtualLanes provides a comprehensive command-line interface (CLI) built with Typer, offering rich command-line functionality with subcommands, options, and help documentation.
 
 ## Installation
 
-The CLI is automatically installed when you install TrueRoll:
+The CLI is automatically installed when you install VirtualLanes:
 
 ```bash
-pip install true-roll
+pip install virtual-lanes
 ```
 
 ## Command Structure
 
-TrueRoll's CLI follows a subcommand structure:
+VirtualLanes's CLI follows a subcommand structure:
 
 ```
-true-roll [command] [subcommand] [options] [arguments]
+virtual-lanes [command] [subcommand] [options] [arguments]
 ```
 
 Main commands include:
@@ -31,7 +31,7 @@ Main commands include:
 To see all available commands:
 
 ```bash
-true-roll --help
+virtual-lanes --help
 ```
 
 ## Bowler Management
@@ -39,7 +39,7 @@ true-roll --help
 ### List bowlers
 
 ```bash
-true-roll bowlers list
+virtual-lanes bowlers list
 ```
 
 Example output:
@@ -56,13 +56,13 @@ Example output:
 ### Add a bowler
 
 ```bash
-true-roll bowlers add "John Doe" 180
+virtual-lanes bowlers add "John Doe" 180
 ```
 
 ### Get help on bowler commands
 
 ```bash
-true-roll bowlers --help
+virtual-lanes bowlers --help
 ```
 
 ## Game Management
@@ -70,7 +70,7 @@ true-roll bowlers --help
 ### List games
 
 ```bash
-true-roll games list
+virtual-lanes games list
 ```
 
 Example output:
@@ -87,13 +87,13 @@ Example output:
 ### Add a game
 
 ```bash
-true-roll games add "John Doe" 210
+virtual-lanes games add "John Doe" 210
 ```
 
 ### Get help on game commands
 
 ```bash
-true-roll games --help
+virtual-lanes games --help
 ```
 
 ## League Management
@@ -101,7 +101,7 @@ true-roll games --help
 ### List leagues
 
 ```bash
-true-roll leagues list
+virtual-lanes leagues list
 ```
 
 Example output:
@@ -117,13 +117,13 @@ Example output:
 ### Add a league
 
 ```bash
-true-roll leagues add "Monday Night League"
+virtual-lanes leagues add "Monday Night League"
 ```
 
 ### Get help on league commands
 
 ```bash
-true-roll leagues --help
+virtual-lanes leagues --help
 ```
 
 ## TUI Interface
@@ -131,7 +131,7 @@ true-roll leagues --help
 Start the Terminal User Interface:
 
 ```bash
-true-roll tui start
+virtual-lanes tui start
 ```
 
 ## Web Interface
@@ -139,19 +139,19 @@ true-roll tui start
 Start the Web Interface:
 
 ```bash
-true-roll web start
+virtual-lanes web start
 ```
 
 With custom host and port:
 
 ```bash
-true-roll web start --host 0.0.0.0 --port 8080
+virtual-lanes web start --host 0.0.0.0 --port 8080
 ```
 
 Enable debug mode:
 
 ```bash
-true-roll web start --debug
+virtual-lanes web start --debug
 ```
 
 ## Python API Access
@@ -159,24 +159,24 @@ true-roll web start --debug
 You can also access the CLI programmatically from Python:
 
 ```python
-import true_roll
-true_roll.run_cli()
+import virtual_lanes
+virtual_lanes.run_cli()
 ```
 
-This is equivalent to running the `true-roll` command in the terminal.
+This is equivalent to running the `virtual-lanes` command in the terminal.
 
 ## Advanced Usage
 
 ### Environment Variables
 
-TrueRoll CLI also respects environment variables. Any option can be set using an environment variable with the prefix `TRUE_ROLL_` followed by the option name in uppercase.
+VirtualLanes CLI also respects environment variables. Any option can be set using an environment variable with the prefix `VIRTUAL_LANES_` followed by the option name in uppercase.
 
 For example:
-- `--host` can be set with `TRUE_ROLL_HOST`
-- `--port` can be set with `TRUE_ROLL_PORT`
+- `--host` can be set with `VIRTUAL_LANES_HOST`
+- `--port` can be set with `VIRTUAL_LANES_PORT`
 
 ```bash
-export TRUE_ROLL_HOST=0.0.0.0
-export TRUE_ROLL_PORT=8080
-true-roll web start
+export VIRTUAL_LANES_HOST=0.0.0.0
+export VIRTUAL_LANES_PORT=8080
+virtual-lanes web start
 ```

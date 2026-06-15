@@ -1,10 +1,7 @@
 """VirtualLanes Web Interface using FastHTML."""
 
 from fasthtml.common import *
-import numpy as np
-from virtual_lanes import (
-    alley, bowler, game, league, tournament, scoring
-)
+
 
 def create_app(debug=False):
     """Create the FastHTML application."""
@@ -41,18 +38,18 @@ def create_app(debug=False):
     
     @rt("/bowlers")
     def get():
-        # Example bowlers for demonstration
+        # Example bowlers for demonstration (mock data; not yet wired to the database)
         example_bowlers = [
-            bowler.Bowler("John Doe", 180),
-            bowler.Bowler("Jane Smith", 210),
-            bowler.Bowler("Bob Johnson", 160)
+            {"name": "John Doe", "average": 180},
+            {"name": "Jane Smith", "average": 210},
+            {"name": "Bob Johnson", "average": 160},
         ]
-        
-        return Titled("TrueRoll - Bowlers",
+
+        return Titled("VirtualLanes - Bowlers",
             Div(
                 H1("Bowlers"),
                 Ul(*[Li(
-                    H3(f"{b.name} - Average: {b.average}"),
+                    H3(f"{b['name']} - Average: {b['average']}"),
                     id=f"bowler-{i}"
                 ) for i, b in enumerate(example_bowlers)]),
                 Button("Add Bowler", hx_get="/bowlers/new", hx_target="#new-bowler-form"),
@@ -72,7 +69,7 @@ def create_app(debug=False):
     
     @rt("/games")
     def get():
-        return Titled("TrueRoll - Games",
+        return Titled("VirtualLanes - Games",
             Div(
                 H1("Games"),
                 P("Track and analyze bowling games here.")
@@ -81,7 +78,7 @@ def create_app(debug=False):
     
     @rt("/leagues")
     def get():
-        return Titled("TrueRoll - Leagues",
+        return Titled("VirtualLanes - Leagues",
             Div(
                 H1("Leagues"),
                 P("Manage bowling leagues and tournaments here.")

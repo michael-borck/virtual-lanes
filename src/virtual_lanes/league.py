@@ -1,11 +1,11 @@
-from typing import List
-from .bowler import Bowler
-from .alley import Alley
-from .tournament import Tournament
+from virtual_lanes.alley import Alley
+from virtual_lanes.bowler import Bowler
+from virtual_lanes.tournament import Tournament
 
 
 class League:
-    def __init__(self, name: str, alley: Alley, oil_pattern: str, team_size: int, num_games_per_night: int, season_length: int):
+    def __init__(self, name: str, alley: Alley, oil_pattern: str, team_size: int,
+                 num_games_per_night: int, season_length: int) -> None:
         """
         Initialises a league with specified parameters, setting up the environment where the league games are played,
         the type of oil pattern used, the team size, the number of games per league night, and the duration of the season.
@@ -27,10 +27,9 @@ class League:
         self.team_size = team_size
         self.num_games_per_night = num_games_per_night
         self.season_length = season_length
-        self.teams: List[List[Bowler]] = []
-        # self.teams = []  # List of teams, each team is a list of Bowler objects
+        self.teams: list[list[Bowler]] = []
 
-    def add_team(self, team: List[Bowler]):
+    def add_team(self, team: list[Bowler]) -> None:
         """
         Adds a team to the league. Ensures the team size matches the league's required team size.
 
@@ -44,15 +43,15 @@ class League:
             raise ValueError("Team size must match the league's specified team size")
         self.teams.append(team)
 
-    def run_season(self):
+    def run_season(self) -> dict[str, list[dict[str, float]]]:
         """
         Simulates the entire season of the league, organising games per night for each team over the specified season length.
 
         Returns:
-            Dict[str, List[Dict[str, float]]]: A dictionary with team names as keys and a list of their average scores per night as values.
+            dict[str, list[dict[str, float]]]: A dictionary with team names as keys and a list of their average scores per night as values.
         """
-        results = {f"Team {i+1}": [] for i in range(len(self.teams))}
-        for week in range(self.season_length):
+        results: dict[str, list[dict[str, float]]] = {f"Team {i+1}": [] for i in range(len(self.teams))}
+        for _week in range(self.season_length):
             for i, team in enumerate(self.teams):
                 tournament = Tournament(team, self.alley, self.num_games_per_night)
                 tournament.run_tournament()

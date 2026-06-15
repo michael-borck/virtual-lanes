@@ -1,6 +1,6 @@
-"""Main entry point for TrueRoll."""
+"""Main entry point for VirtualLanes."""
 
-from true_roll.cli.commands import app
+from virtual_lanes.cli.commands import app
 
 if __name__ == "__main__":
     app()

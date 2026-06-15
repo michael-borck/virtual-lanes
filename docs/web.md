@@ -1,6 +1,6 @@
 # Web Interface
 
-TrueRoll includes a modern, responsive web interface built with FastHTML, providing an easy-to-use graphical interface for managing your bowling data.
+VirtualLanes includes a modern, responsive web interface built with FastHTML, providing an easy-to-use graphical interface for managing your bowling data.
 
 ## Starting the Web Interface
 
@@ -9,32 +9,32 @@ You can start the web interface in several ways:
 ### Via Command Line
 
 ```bash
-true-roll web start
+virtual-lanes web start
 ```
 
 With custom host and port:
 
 ```bash
-true-roll web start --host 0.0.0.0 --port 8080
+virtual-lanes web start --host 0.0.0.0 --port 8080
 ```
 
 Enable debug mode:
 
 ```bash
-true-roll web start --debug
+virtual-lanes web start --debug
 ```
 
 ### Via Python API
 
 ```python
-import true_roll
-true_roll.run_web(host="127.0.0.1", port=8000, debug=False)
+import virtual_lanes
+virtual_lanes.run_web(host="127.0.0.1", port=8000, debug=False)
 ```
 
 ### Direct Module Execution
 
 ```bash
-python -m true_roll.web.app
+python -m virtual_lanes.web.app
 ```
 
 ## Accessing the Web Interface
@@ -59,7 +59,7 @@ The home page provides quick access to the main sections of the application:
 - Games
 - Leagues
 
-![TrueRoll Web Interface Home](images/web_home.png)
+![VirtualLanes Web Interface Home](images/web_home.png)
 
 ### Bowlers Section
 
@@ -70,7 +70,7 @@ The Bowlers section allows you to:
 - Add new bowlers
 - Edit existing bowlers
 
-![TrueRoll Web Interface Bowlers](images/web_bowlers.png)
+![VirtualLanes Web Interface Bowlers](images/web_bowlers.png)
 
 ### Games Section
 
@@ -81,7 +81,7 @@ The Games section lets you:
 - Add new game records
 - View detailed game statistics
 
-![TrueRoll Web Interface Games](images/web_games.png)
+![VirtualLanes Web Interface Games](images/web_games.png)
 
 ### Leagues Section
 
@@ -92,7 +92,7 @@ The Leagues section enables you to:
 - Create new leagues
 - Manage tournament schedules
 
-![TrueRoll Web Interface Leagues](images/web_leagues.png)
+![VirtualLanes Web Interface Leagues](images/web_leagues.png)
 
 ## Features
 
@@ -126,7 +126,7 @@ The interface uses the lightweight PicoCSS framework for clean, semantic styling
 You can extend the web interface by adding custom routes to the FastHTML application:
 
 ```python
-from true_roll.web.app import create_app
+from virtual_lanes.web.app import create_app
 
 app = create_app()
 
@@ -135,7 +135,7 @@ def get():
     return Titled("Custom Page", 
         Div(
             H1("My Custom Page"),
-            P("This is a custom page added to the TrueRoll web interface.")
+            P("This is a custom page added to the VirtualLanes web interface.")
         )
     )
 ```
@@ -191,7 +191,7 @@ The web interface is designed for local network use. If you're exposing it to th
    If port 8000 is already in use, specify a different port:
    
    ```bash
-   trueroll web start --port 8080
+   virtual-lanes web start --port 8080
    ```
 
 2. **Permission denied**
@@ -199,13 +199,13 @@ The web interface is designed for local network use. If you're exposing it to th
    On Linux/macOS, ports below 1024 require elevated privileges:
    
    ```bash
-   sudo true-roll web start --port 80
+   sudo virtual-lanes web start --port 80
    ```
 
 3. **Address already in use**
    
-   You may already have a TrueRoll web server running. Check with:
+   You may already have a VirtualLanes web server running. Check with:
    
    ```bash
-   ps aux | grep true-roll
+   ps aux | grep virtual-lanes
    ```

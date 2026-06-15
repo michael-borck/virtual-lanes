@@ -1,6 +1,6 @@
-# Contributing to TrueRoll
+# Contributing to VirtualLanes
 
-We welcome contributions from the community! This document provides guidelines and instructions for contributing to the TrueRoll project.
+We welcome contributions from the community! This document provides guidelines and instructions for contributing to the VirtualLanes project.
 
 ## Development Environment Setup
 
@@ -27,7 +27,7 @@ uv pip install -e ".[dev]"
 
 ## Project Structure
 
-TrueRoll uses modern Python packaging with pyproject.toml as the single configuration file for:
+VirtualLanes uses modern Python packaging with pyproject.toml as the single configuration file for:
 - Package metadata and dependencies
 - Build system configuration
 - Development tools configuration (ruff, mypy, pytest)

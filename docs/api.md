@@ -1,30 +1,30 @@
 # Alley Class
 
-::: trueroll.alley.Alley
+::: virtual_lanes.alley.Alley
 
 # Bowler Class
 
-::: trueroll.bowler.Bowler
+::: virtual_lanes.bowler.Bowler
 
 # Scoring Class
 
-::: trueroll.scoring.Scoring
+::: virtual_lanes.scoring.Scoring
 
 # Game Class
 
-::: trueroll.game.Game
+::: virtual_lanes.game.Game
 
 
 # Tournament Class
 
-::: trueroll.tournament.Tournament
+::: virtual_lanes.tournament.Tournament
 
 
 # BowlingDatabase Class
 
-::: trueroll.bowling_database.BowlingDatabase
+::: virtual_lanes.bowling_database.BowlingDatabase
 
 
 # League Class
 
-::: trueroll.league.League
+::: virtual_lanes.league.League

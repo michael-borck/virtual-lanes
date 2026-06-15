@@ -1,5 +1,6 @@
 import pytest
-from virtual_lanes import Bowler, Alley, Tournament
+
+from virtual_lanes import Alley, Bowler, Tournament
 
 
 @pytest.fixture
