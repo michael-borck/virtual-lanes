@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>VirtualLanes — Product Direction &amp; Decisions - VirtualLanes Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "VirtualLanes \u2014 Product Direction \u0026amp; Decisions";
+        var mkdocs_page_input_path = "product-direction.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> VirtualLanes Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Interfaces</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../interfaces/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cli/">CLI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tui/">TUI</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../web/">Web</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contribute/">Contributing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contact/">Contact</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">VirtualLanes Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">VirtualLanes — Product Direction &amp; Decisions</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="virtuallanes-product-direction-decisions">VirtualLanes — Product Direction &amp; Decisions</h1>
+<blockquote>
+<p>Living record of the product/architecture decisions made while shaping VirtualLanes from a
+Python simulation library into a phone-first bowling companion app. Capture-as-we-go so we
+don't lose the thread between sessions. (Not auto-generated; edit freely.)</p>
+</blockquote>
+<h2 id="vision">Vision</h2>
+<p>A <strong>phone-first bowling companion</strong> for real bowlers, with two modes:</p>
+<ol>
+<li><strong>Bowl-off (Compete)</strong> — you bowl your <em>real</em> frames at the alley; a chosen rival is
+   <em>simulated</em> and revealed frame-by-frame beside you. Live head-to-head. Makes practice fun
+   and competitive. (Prototype: <code>prototype/bowl-off.html</code>.)</li>
+<li><strong>Lane Read (Study)</strong> — journal <em>real</em> shots: what you saw → decided → happened (V/X vs
+   video), find misread patterns. (Exists today as <strong>LaneRead</strong>, deployed at laneread.com.)</li>
+</ol>
+<p>You never simulate the human in either mode — you enter your real rolls/observations.</p>
+<h2 id="platform-architecture">Platform &amp; architecture</h2>
+<ul>
+<li><strong>One PWA, two modes</strong> — not two apps. PWA storage is partitioned per origin, so one origin =
+  shared offline history with <strong>no backend, no account</strong>. The "two apps" feel comes from a
+  <strong>launch mode-picker</strong> ("Compete or Study?") + <strong>bottom-tab</strong> switching, not two installs.</li>
+<li><strong>Offline-first</strong>, local storage (localStorage/IndexedDB). Bowling alleys = bad signal; no
+  per-frame round-trips.</li>
+<li><strong>PWA now → Capacitor later</strong> to reach App Store / Play Store with the <em>same</em> codebase. Don't
+  ship two native apps (same sandboxing problem as two PWAs).</li>
+<li><strong>Backend/accounts deferred</strong> to the future cloud-analytics / AI phase (what LaneRead's roadmap
+  already teases). Only then does splitting into truly separate apps become viable.</li>
+<li><strong>Recommended stack:</strong> SvelteKit + TypeScript (least boilerplate, great PWA story); Vite+React
+  is the fallback if more examples/AI-help matter. Tabbed shell: <code>[Bowl-off] [Lane Read] [History] [Settings]</code>.</li>
+</ul>
+<h2 id="unified-data-model">Unified data model</h2>
+<p>Both modes produce the <strong>same <code>Game</code> record</strong> (this is what makes them one app):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Game {
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  id, date, alley, condition {length, volume, surface, patternType: house|sport},
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  yourBall(s), frames: [your rolls], score,
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  mode: &#39;bowloff&#39; | &#39;practice&#39;,
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  // bowl-off only:  opponents: [...], result
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  // lane-read only: shots: [{ saw, decided, happened: V|X, emotion, adjustments }]
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>}
+</code></pre></div>
+<p><strong>History/analytics is the backbone and the long-term value</strong> (score trends, performance by
+pattern, misread patterns). One timeline of every game, simulated and real.</p>
+<h2 id="simulation-model-validated-in-node-ported-from-the-python-repo">Simulation model (validated in Node; ported from the Python repo)</h2>
+<ul>
+<li><strong>Causal levers = rev rate + ball speed + accuracy + consistency.</strong> "Style" (stroker / cranker /
+  two-hander / straight / tweener) is just a <strong>preset that fills those in</strong>. Tier (rookie→elite)
+  scales level. → enables "mimic a champion by their stats."</li>
+<li><strong>Lane conditions:</strong> pattern length, oil volume, surface, and <strong>house vs sport</strong> (sport removes
+  miss room → punishes low accuracy/consistency).</li>
+<li><strong>Oil breakdown:</strong> lane friction rises per frame; rate = traffic × revs (aggression) × coverstock.
+  More bowlers on the lane → faster burn. Lane-traffic config: ignore / by-match / manual count.</li>
+<li><strong>Mid-game ball change:</strong> a power player switches to urethane when the lane burns past comfort.</li>
+<li><strong>Ball recommender:</strong> generic covers/cores (plastic/urethane/solid/pearl × sym/asym). No brands.</li>
+</ul>
+<h2 id="gender-resolved-and-deliberately-neutral">Gender — resolved (and deliberately neutral)</h2>
+<ul>
+<li>Gender is <strong>NOT a simulation input.</strong> The real average difference lives in <strong>rev rate + ball
+  speed</strong> (power/leverage; the fixed 16 lb ball cap compounds it) plus participation depth — not a
+  bowling-specific rule. So we model revs/speed and <strong>don't encode gender at all</strong>.</li>
+<li><strong>Division</strong> (Open / PBA / PWBA) is a <strong>cosmetic label</strong> with zero gameplay effect.</li>
+<li><strong>Handicap</strong> is a plain per-bowler number (the human can enter their league handicap). Modes:
+  scratch / per-bowler / % of difference. The Asia "flat-8 for females" = just give a bowler a
+  handicap of 8. No gender mechanic, no debate.</li>
+</ul>
+<h2 id="ip-identity">IP / identity</h2>
+<p>Ship only <strong>fictional</strong> bowlers and <strong>generic</strong> ball families. No real names, likenesses, or ball
+brands (right-of-publicity / trademark). Users may <strong>privately</strong> create profiles that mimic a
+champion's known stats for personal use. Don't let a future sharing feature publish real
+names/likenesses.</p>
+<h2 id="personas">Personas</h2>
+<ul>
+<li>Style archetypes (cranker/stroker/two-hander/etc.) across tiers.</li>
+<li><strong>League profiles:</strong> League Larry (~160, house basher, lost on sport), Scratch Sam (~205,
+  exposed on sport), Sport Stacy (~230, holds up on sport).</li>
+<li><strong>Create-your-own</strong> bowlers (rev/speed/acc/cons sliders) and balls (cover/core).</li>
+</ul>
+<h2 id="open-questions">Open questions</h2>
+<ul>
+<li><strong>Which bowl-off screen layout</strong> (A Alley scoreboard / B VS duel / C One-thumb feed) to carry
+  into the real PWA. Decide by feel on a phone.</li>
+<li>Does the house↔sport swing and the ball-change moment feel real?</li>
+</ul>
+<h2 id="existing-assets">Existing assets</h2>
+<ul>
+<li><code>prototype/bowl-off.html</code> — throwaway phone prototype; engine validated in Node. Fold the
+  winning layout + the validated engine into the real PWA, then delete.</li>
+<li><strong>LaneRead</strong> (separate repo <code>~/Projects/lane-read</code>, deployed laneread.com) — mature vanilla
+  single-file tracker. Becomes the <strong>Study mode</strong>; port into the PWA. laneread.com can stay as a
+  marketing front door. Don't merge the two prototype codebases prematurely — converge on the
+  shared <code>Game</code> model, then build both into the real PWA.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
