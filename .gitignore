@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# NOTE: bare `lib/` `lib64/` removed — they matched the web app's src/lib.
+# Python venv/build artifacts are covered by .venv/, build/, dist/ already.
 parts/
 sdist/
 var/
