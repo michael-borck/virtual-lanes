@@ -1,0 +1,156 @@
+:root {
+	--bg: #0b1020;
+	--panel: #151b30;
+	--panel2: #1d2640;
+	--line: #2b3556;
+	--ink: #eef1fb;
+	--dim: #9aa6cc;
+	--me: #46d39a;
+	--opp: #ff7a59;
+	--accent: #6c8cff;
+	--gold: #ffce4d;
+}
+* {
+	box-sizing: border-box;
+}
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+body {
+	background: var(--bg);
+	color: var(--ink);
+	font:
+		15px/1.45 -apple-system,
+		system-ui,
+		Segoe UI,
+		Roboto,
+		sans-serif;
+	-webkit-tap-highlight-color: transparent;
+	overscroll-behavior: none;
+}
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+button {
+	font: inherit;
+	color: inherit;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+.app {
+	max-width: 540px;
+	margin: 0 auto;
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+/* page content area (sits above the tab bar) */
+.page {
+	flex: 1;
+	padding: 18px 16px calc(78px + env(safe-area-inset-bottom));
+}
+.page h1 {
+	font-size: 22px;
+	margin: 4px 0 6px;
+}
+.page p.lede {
+	color: var(--dim);
+	margin: 0 0 14px;
+}
+.soon {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 14px;
+	padding: 16px;
+	color: var(--dim);
+}
+
+/* launch mode-picker */
+.launch {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 16px;
+	padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+}
+.launch .brand {
+	text-align: center;
+	margin-bottom: 6px;
+}
+.launch .brand h1 {
+	font-size: 30px;
+	margin: 0;
+}
+.launch .brand p {
+	color: var(--dim);
+	margin: 4px 0 0;
+}
+.tile {
+	display: block;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 18px;
+	padding: 22px 20px;
+	color: var(--ink);
+}
+.tile:active {
+	background: var(--panel2);
+}
+.tile .t {
+	font-size: 20px;
+	font-weight: 800;
+}
+.tile .d {
+	color: var(--dim);
+	font-size: 13px;
+	margin-top: 4px;
+}
+.tile.compete {
+	border-color: rgba(108, 140, 255, 0.5);
+}
+.tile.study {
+	border-color: rgba(70, 211, 154, 0.5);
+}
+.launch .minor {
+	text-align: center;
+	color: var(--dim);
+	font-size: 13px;
+	margin-top: 4px;
+}
+
+/* bottom tab bar */
+.tabbar {
+	position: fixed;
+	left: 50%;
+	bottom: 0;
+	transform: translateX(-50%);
+	width: 100%;
+	max-width: 540px;
+	display: flex;
+	background: var(--panel);
+	border-top: 1px solid var(--line);
+	padding-bottom: env(safe-area-inset-bottom);
+	z-index: 20;
+}
+.tabbar a {
+	flex: 1;
+	text-align: center;
+	padding: 10px 0 12px;
+	color: var(--dim);
+	font-size: 11px;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+.tabbar a .ic {
+	font-size: 20px;
+}
+.tabbar a.active {
+	color: var(--ink);
+}
