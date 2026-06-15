@@ -1,30 +1,47 @@
 <script lang="ts">
-	// Stub: full Bowl-off (layout B + positional pin deck) is the next build step.
-	// For now, a live engine check — simulate the roster on a medium house shot.
-	import { ROSTER, TIERS, styleShort } from '$lib/engine/personas';
-	import { initialFriction, breakdownRate, recommendBall, simBowlerGame, lastTotal, clamp } from '$lib/engine/bowling';
-	import type { LaneCondition } from '$lib/engine/types';
+	import { g } from '$lib/bowloff/state.svelte';
+	import Setup from '$lib/bowloff/Setup.svelte';
+	import Play from '$lib/bowloff/Play.svelte';
+	import Done from '$lib/bowloff/Done.svelte';
 
-	const cond: LaneCondition = { alley: 'Sunset Lanes', length: 'medium', volume: 'medium', surface: 'synthetic', patternType: 'house' };
-	const initF = initialFriction(cond);
-	const onLane = ROSTER.map((b) => ({ attr: b.attr, ball: recommendBall(clamp((b.attr.rev - 150) / 400, 0, 1), initF) }));
-	const rate = breakdownRate(onLane, { breakdown: true, laneMode: 'bySelection', manualCount: ROSTER.length });
-	const lane = { initialFriction: initF, rate, sport: false, allowBallChange: true };
-
-	const results = ROSTER.map((b) => {
-		const sim = simBowlerGame(b, lane, recommendBall(clamp((b.attr.rev - 150) / 400, 0, 1), initF + 0.07));
-		return { name: b.name, style: styleShort(b.styleKey), tier: TIERS[b.tier].label, score: lastTotal(sim.frames), sw: sim.switchFrame };
-	}).sort((a, b) => b.score - a.score);
+	let frame = $derived(Math.min(10, g.curIdx + 1));
 </script>
 
-<div class="page">
-	<h1>🎳 Bowl-off</h1>
-	<p class="lede">Coming next: the full frame-by-frame duel (layout B + positional pin deck). Below is a live engine check — one simulated game each, medium house shot.</p>
+{#if g.screen !== 'setup'}
+	<div class="topbar">
+		<span class="tag">🎳 BOWL-OFF</span>
+		<span class="sub">· {g.cond.length}/{g.cond.volume} oil · Fr {frame}/10</span>
+		<span style="flex:1"></span>
+		<button class="ghost" onclick={() => g.reset()}>↺ New</button>
+	</div>
+{/if}
 
-	{#each results as r (r.name)}
-		<div class="soon" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-			<span><strong>{r.name}</strong><br /><span style="font-size:12px;color:var(--dim)">{r.style} · {r.tier}{r.sw != null ? ` · 🔄 ball down F${r.sw + 1}` : ''}</span></span>
-			<span style="font-weight:800; font-size:20px; color:var(--accent)">{r.score}</span>
-		</div>
-	{/each}
-</div>
+{#if g.screen === 'setup'}
+	<Setup />
+{:else if g.screen === 'play'}
+	<Play />
+{:else}
+	<Done />
+{/if}
+
+<style>
+	.topbar {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 14px;
+		border-bottom: 1px solid var(--line);
+		position: sticky;
+		top: 0;
+		background: var(--bg);
+		z-index: 5;
+	}
+	.tag {
+		font-weight: 700;
+		letter-spacing: 0.5px;
+	}
+	.sub {
+		color: var(--dim);
+		font-size: 12px;
+	}
+</style>
