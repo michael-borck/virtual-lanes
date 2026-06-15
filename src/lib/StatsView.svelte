@@ -68,6 +68,7 @@
 	{@render groupCard('By pattern type', s.byPattern)}
 	{@render groupCard('By oil volume', s.byVolume)}
 	{@render groupCard('By pattern length', s.byLength)}
+	{@render groupCard('By ball', s.byBall)}
 
 	{#if s.readJudged}
 		<div class="card">

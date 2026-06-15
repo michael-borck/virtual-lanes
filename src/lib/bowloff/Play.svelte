@@ -2,6 +2,7 @@
 	import { g } from './state.svelte';
 	import Leaderboard from './Leaderboard.svelte';
 	import PostIt from './PostIt.svelte';
+	import BallPicker from './BallPicker.svelte';
 	import { glyphs, lastTotal, ALLPINS, PIN_ROWS } from '$lib/engine/bowling';
 
 	let noteTarget = $derived(Math.min(Math.max(g.revealed - 1, 0), 9));
@@ -43,6 +44,9 @@
 		</div>
 	{/if}
 
+	{#if g.currentBall}
+		<button class="ballbar" onclick={() => (g.ballPickerOpen = true)}>🎳 {g.currentBall.name}<span class="sw">🔄 switch</span></button>
+	{/if}
 	<div class="leavestat">{leaveLine}</div>
 	<button class="notebtn" onclick={() => g.openNote(noteTarget)}>
 		{g.notes[noteTarget] ? `📝 Edit frame ${noteTarget + 1} note` : `📝 Note frame ${noteTarget + 1}`}{g.noteCount ? ` · ${g.noteCount} logged` : ''}
@@ -69,6 +73,7 @@
 </div>
 
 <PostIt />
+<BallPicker />
 
 <style>
 	.play {
@@ -154,6 +159,23 @@
 		font-weight: 600;
 		font-size: 13px;
 		margin-bottom: 8px;
+	}
+	.ballbar {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		padding: 9px 12px;
+		background: var(--panel);
+		font-size: 13px;
+		font-weight: 600;
+		margin-bottom: 8px;
+	}
+	.ballbar .sw {
+		color: var(--accent);
+		font-size: 12px;
 	}
 	.deck {
 		display: flex;

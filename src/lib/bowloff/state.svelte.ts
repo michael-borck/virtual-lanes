@@ -15,6 +15,7 @@ import {
 } from '$lib/engine/bowling';
 import { STYLE_PRESETS, TIERS } from '$lib/engine/personas';
 import { roster as rosterStore } from '$lib/roster.svelte';
+import { arsenal } from '$lib/arsenal.svelte';
 import { history, History } from '$lib/history.svelte';
 import type { Ball, Bowler, Frame, GameRecord, JournalShot, Lane, LaneCondition, Leave, StyleKey } from '$lib/engine/types';
 
@@ -85,6 +86,11 @@ class BowlOff {
 	notes = $state<Record<number, JournalShot>>({});
 	noteFrame = $state<number | null>(null); // frame whose post-it is open
 	noteDraft = $state<JournalShot>(emptyNote());
+
+	// your ball + per-game ball changes
+	ballId = $state<string>('');
+	ballChanges = $state<{ frame: number; id: string; name: string; cover: string }[]>([]);
+	ballPickerOpen = $state(false);
 
 	/** Selectable rivals = visible built-ins + custom (from the roster store). */
 	get roster() {
@@ -159,6 +165,10 @@ class BowlOff {
 		this.deckKnocked = [];
 		this.notes = {};
 		this.noteFrame = null;
+		const firstBall = arsenal.available[0];
+		this.ballId = firstBall?.id ?? '';
+		this.ballChanges = firstBall ? [{ frame: 0, id: firstBall.id, name: firstBall.name, cover: firstBall.cover }] : [];
+		this.ballPickerOpen = false;
 		this.screen = 'play';
 	}
 	reset() {
@@ -262,6 +272,8 @@ class BowlOff {
 			opponents: this.opponents.length ? this.opponents.map((o) => ({ name: o.bowler.name, score: lastTotal(this.oppFrames(o)) })) : undefined,
 			result,
 			usedHandicap: this.useHcp,
+			ball: this.ballChanges[0]?.name,
+			ballChanges: this.ballChanges.length > 1 ? this.ballChanges.map((c) => ({ frame: c.frame, name: c.name, cover: c.cover })) : undefined,
 			shots: this.noteCount ? Object.values(this.notes).map((s) => ({ ...s, adjustments: [...s.adjustments] })) : undefined
 		};
 		history.add(rec);
@@ -296,6 +308,22 @@ class BowlOff {
 		if (has) this.notes[this.noteFrame] = { ...d, adjustments: [...d.adjustments], frame: this.noteFrame };
 		else delete this.notes[this.noteFrame];
 		this.noteFrame = null;
+	}
+
+	/* ---------- your ball / ball changes ---------- */
+	get currentBall() {
+		return arsenal.available.find((b) => b.id === this.ballId);
+	}
+	switchBall(id: string) {
+		const b = arsenal.available.find((x) => x.id === id);
+		this.ballPickerOpen = false;
+		if (!b || id === this.ballId) return;
+		this.ballId = id;
+		const f = Math.min(this.curIdx, 9);
+		const entry = { frame: f, id: b.id, name: b.name, cover: b.cover };
+		const ex = this.ballChanges.findIndex((c) => c.frame === f);
+		if (ex >= 0) this.ballChanges[ex] = entry;
+		else this.ballChanges.push(entry);
 	}
 
 	/* ---------- views ---------- */

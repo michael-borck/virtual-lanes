@@ -122,8 +122,9 @@ export interface GameRecord {
 	opponents?: { name: string; score: number }[];
 	result?: 'win' | 'loss' | 'tie';
 	usedHandicap?: boolean;
+	ball?: string; // primary ball used (bowl-off) or free-text (journal)
+	ballChanges?: { frame: number; name: string; cover: string }[]; // bowl-off ball-downs
 	// journal only
 	pattern?: string;
-	ball?: string;
 	shots?: JournalShot[];
 }
