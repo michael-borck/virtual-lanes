@@ -116,7 +116,8 @@
 		<a class="cta sub" href="/centres" style="text-decoration:none">🏟 Centres</a>
 	</div>
 
-	<div class="sec">About</div>
+	<div class="sec">Help &amp; about</div>
+	<a class="cta sub" href="/help" style="text-decoration:none;margin-bottom:10px">❓ Getting started / help →</a>
 	<div class="soon">VirtualLanes v0.1 · offline-first PWA. Your data lives only on this device — use Export to back it up or move it to another phone.</div>
 </div>
 

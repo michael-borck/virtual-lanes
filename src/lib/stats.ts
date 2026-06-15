@@ -31,6 +31,8 @@ export interface Stats {
 	byVolume: Group[];
 	byLength: Group[];
 	byBall: Group[];
+	byCentre: Group[];
+	byApproach: Group[];
 	journalGames: number;
 	readMatched: number;
 	readJudged: number;
@@ -144,6 +146,8 @@ export function computeStats(all: GameRecord[]): Stats {
 		byVolume: group((g) => g.condition?.volume ?? '—'),
 		byLength: group((g) => g.condition?.length ?? '—'),
 		byBall: group((g) => g.ball ?? '—'),
+		byCentre: group((g) => g.centre?.name ?? '—'),
+		byApproach: group((g) => g.centre?.approachFeel ?? '—'),
 		journalGames: jg.length,
 		readMatched,
 		readJudged

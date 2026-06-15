@@ -69,6 +69,8 @@
 	{@render groupCard('By oil volume', s.byVolume)}
 	{@render groupCard('By pattern length', s.byLength)}
 	{@render groupCard('By ball', s.byBall)}
+	{@render groupCard('By centre', s.byCentre)}
+	{@render groupCard('By approach feel', s.byApproach)}
 
 	{#if s.readJudged}
 		<div class="card">
