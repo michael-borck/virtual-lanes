@@ -51,6 +51,8 @@ export interface StandRow {
 	sw: number | null;
 }
 
+const SETUP_KEY = 'vl.bowloff.setup.v1';
+
 class BowlOff {
 	screen = $state<Screen>('setup');
 	cond = $state<LaneCondition>({
@@ -76,6 +78,27 @@ class BowlOff {
 
 	roster = ROSTER;
 
+	constructor() {
+		this.#loadSetup();
+	}
+	#loadSetup() {
+		if (typeof localStorage === 'undefined') return;
+		try {
+			const s = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null');
+			if (!s) return;
+			if (s.cond) this.cond = s.cond;
+			if (s.human) this.human = s.human;
+			if (Array.isArray(s.selectedIds)) this.selectedIds = s.selectedIds.filter((id: string) => this.roster.some((r) => r.id === id));
+			if (s.cfg) this.cfg = s.cfg;
+		} catch {
+			/* ignore corrupt setup */
+		}
+	}
+	#saveSetup() {
+		if (typeof localStorage === 'undefined') return;
+		localStorage.setItem(SETUP_KEY, JSON.stringify({ cond: this.cond, human: this.human, selectedIds: this.selectedIds, cfg: this.cfg }));
+	}
+
 	/* ---------- setup helpers ---------- */
 	get humanAttr() {
 		return { ...STYLE_PRESETS[this.human.styleKey] };
@@ -98,6 +121,8 @@ class BowlOff {
 	startGame() {
 		const c = this.cond;
 		const initF = initialFriction(c);
+		this.selectedIds = this.selectedIds.filter((id) => this.roster.some((r) => r.id === id));
+		this.#saveSetup(); // remember last-used setup
 		const opps: Opp[] = this.selectedIds.map((id) => {
 			const b = this.roster.find((r) => r.id === id) as Bowler;
 			const ball = recommendBall(clamp((b.attr.rev - 150) / 400, 0, 1), initF + 0.07);

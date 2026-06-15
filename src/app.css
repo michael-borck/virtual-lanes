@@ -434,3 +434,47 @@ button {
 .cell.opp .tot {
 	color: var(--opp);
 }
+
+/* collapsible setup sections */
+details.acc {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+details.acc > summary {
+	list-style: none;
+	cursor: pointer;
+	padding: 13px 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+details.acc > summary::-webkit-details-marker {
+	display: none;
+}
+details.acc > summary .h {
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+details.acc > summary .h::after {
+	content: '▸';
+	color: var(--dim);
+	font-weight: 400;
+}
+details.acc[open] > summary .h::after {
+	content: '▾';
+}
+details.acc > summary .sum {
+	font-size: 12px;
+	color: var(--dim);
+}
+details.acc[open] > summary .sum {
+	display: none;
+}
+details.acc .body {
+	padding: 2px 14px 14px;
+}
