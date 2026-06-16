@@ -2,39 +2,78 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/state';
+	import { afterNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
-	const TABS = [
-		{ href: '/', ic: '🏠', label: 'Home', exact: true },
+	// The bottom bar = things you DO (the modes). Meta destinations live in "More".
+	const MODES = [
 		{ href: '/bowloff', ic: '🎳', label: 'Bowl-off' },
 		{ href: '/journal', ic: '📖', label: 'Journal' },
 		{ href: '/trace', ic: '🎥', label: 'Trace' },
-		{ href: '/form', ic: '🏃', label: 'Form' },
-		{ href: '/history', ic: '📊', label: 'History' },
-		{ href: '/settings', ic: '⚙️', label: 'Settings' }
+		{ href: '/form', ic: '🏃', label: 'Form' }
 	];
-	// Hide the tab bar on the launch mode-picker.
-	let showTabs = $derived(page.url.pathname !== '/');
-	const isActive = (t: { href: string; exact?: boolean }) =>
-		t.exact ? page.url.pathname === t.href : page.url.pathname.startsWith(t.href);
+	const MENU = [
+		{ href: '/', ic: '🏠', label: 'Home', exact: true },
+		{ href: '/history', ic: '📊', label: 'History' },
+		{ href: '/settings', ic: '⚙️', label: 'Settings' },
+		{ href: '/help', ic: 'ℹ️', label: 'Help & About' }
+	];
+
+	let menuOpen = $state(false);
+	afterNavigate(() => (menuOpen = false)); // close after any navigation
+
+	let path = $derived(page.url.pathname);
+	// Hide the whole tab bar on the launch mode-picker.
+	let showTabs = $derived(path !== '/');
+	const isActive = (href: string, exact = false) => (exact ? path === href : path.startsWith(href));
+	// "More" lights up when you're on one of its (non-home) utility pages.
+	let moreActive = $derived(
+		path.startsWith('/history') || path.startsWith('/settings') || path.startsWith('/help')
+	);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<svelte:window onkeydown={(e) => e.key === 'Escape' && (menuOpen = false)} />
+
 <div class="app">
 	{@render children()}
 
 	{#if showTabs}
+		{#if menuOpen}
+			<button class="backdrop" aria-label="Close menu" onclick={() => (menuOpen = false)}></button>
+			<div class="moresheet">
+				<div class="moremenu" role="menu">
+					{#each MENU as m (m.href)}
+						<a href={m.href} role="menuitem" class:active={isActive(m.href, m.exact)}>
+							<span class="ic">{m.ic}</span><span>{m.label}</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
 		<nav class="tabbar">
-			{#each TABS as t (t.href)}
-				<a href={t.href} class:active={isActive(t)}>
+			{#each MODES as t (t.href)}
+				<a href={t.href} class:active={isActive(t.href)}>
 					<span class="ic">{t.ic}</span>
 					<span>{t.label}</span>
 				</a>
 			{/each}
+			<button
+				type="button"
+				class="moretab"
+				class:active={moreActive || menuOpen}
+				aria-haspopup="true"
+				aria-expanded={menuOpen}
+				onclick={() => (menuOpen = !menuOpen)}
+			>
+				<span class="ic">☰</span>
+				<span>More</span>
+			</button>
 		</nav>
 	{/if}
 </div>
