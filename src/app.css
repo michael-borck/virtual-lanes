@@ -159,16 +159,19 @@ button {
 }
 .tabbar a {
 	flex: 1;
+	min-width: 0;
 	text-align: center;
-	padding: 10px 0 12px;
+	padding: 10px 2px 12px;
 	color: var(--dim);
-	font-size: 11px;
+	font-size: 10px;
+	letter-spacing: -0.2px;
+	white-space: nowrap;
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
 }
 .tabbar a .ic {
-	font-size: 20px;
+	font-size: 19px;
 }
 .tabbar a.active {
 	color: var(--ink);
