@@ -1,6 +1,5 @@
 <div class="topbar">
-	<a class="back" href="/settings">←</a>
-	<span class="tag">HELP</span>
+	<span class="tag">HELP &amp; ABOUT</span>
 </div>
 
 <div class="page">
@@ -54,11 +53,6 @@
 		top: 0;
 		background: var(--bg);
 		z-index: 5;
-	}
-	.back {
-		font-size: 18px;
-		color: var(--ink);
-		padding: 0 4px;
 	}
 	.tag {
 		font-weight: 700;
